@@ -41,6 +41,51 @@ Commit: <SHA> · https://github.com/makmour/md5/commit/<SHA>
 
 ---
 
+## 2026-05-06 · Task 08 - Cloudflare cache rules + style.css versioning
+
+- **Goal:** Enable aggressive Cloudflare edge caching for
+  static assets. Add cache-busting version string to style.css
+  so it can be safely cached at 1 year TTL. CF cache rules
+  are configured manually in the Cloudflare dashboard - not
+  in git.
+- **Changes (code):**
+  - Added `?v=1` to the style.css `<link>` tag in all four
+    HTML files (`public/index.html`, `public/about/index.html`,
+    `public/contact/index.html`, `public/privacy/index.html`).
+    Future CSS changes bump this to `?v=2`, `?v=3`, etc.
+  - SHA fixup: replaced `<SHA-PLACEHOLDER>` in Task 07 entry
+    with `a530be10c2e2cef9c339cac575276059176f2aa6`.
+- **Changes (Cloudflare dashboard - not in git):**
+  - Cache Rule 1 - static assets:
+    matches: `(http.host eq "md5.me") and (http.request.uri.path
+    matches "^/(favicon|apple-touch-icon|og\.png|style\.css)")`
+    edge TTL: 1 year, browser TTL: 1 year, cache level: cache
+    everything
+  - Cache Rule 2 - HTML pages:
+    matches: `(http.host eq "md5.me") and
+    (http.request.uri.path eq "/" or
+    http.request.uri.path matches "^/(about|contact|privacy)")`
+    edge TTL: 5 minutes, browser TTL: 5 minutes, cache level:
+    cache everything
+- **Verified:**
+  - `grep -r "style.css" public/ --include="*.html"` returns
+    4 lines all with `?v=1`.
+  - GH Actions deploy green.
+  - `curl -sI https://md5.me/style.css?v=1 | grep -i cf-cache-status`
+    returns `HIT` after two requests (confirms CF is caching).
+  - `curl -sI https://md5.me/ | grep -i cf-cache-status`
+    returns `HIT` after two requests.
+- **Open items:**
+  - Task 08 SHA fixup on next task (per the rule).
+  - HSTS preload deferred (vps.md5.me blocker - see Task 07).
+  - Self-host Google Fonts (removes fonts.googleapis.com
+    and fonts.gstatic.com from CSP).
+  - Future style.css changes: bump ?v=N in all four HTML
+    files in the same commit as the CSS change.
+- **Commit:** <SHA-PLACEHOLDER> · https://github.com/makmour/md5/commit/<SHA-PLACEHOLDER>
+
+---
+
 ## 2026-05-06 · Task 07 - HSTS preload deferred
 
 - **Goal:** Submit md5.me to the HSTS preload list.
@@ -67,7 +112,7 @@ Commit: <SHA> · https://github.com/makmour/md5/commit/<SHA>
   - HSTS preload remains deferred (see above).
   - Self-host Google Fonts.
   - Cloudflare cache rules.
-- **Commit:** <SHA-PLACEHOLDER> · https://github.com/makmour/md5/commit/<SHA-PLACEHOLDER>
+- **Commit:** a530be10c2e2cef9c339cac575276059176f2aa6 · https://github.com/makmour/md5/commit/a530be10c2e2cef9c339cac575276059176f2aa6
 
 ---
 

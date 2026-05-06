@@ -56,33 +56,38 @@ Commit: <SHA> · https://github.com/makmour/md5/commit/<SHA>
   - SHA fixup: replaced `<SHA-PLACEHOLDER>` in Task 07 entry
     with `a530be10c2e2cef9c339cac575276059176f2aa6`.
 - **Changes (Cloudflare dashboard - not in git):**
-  - Cache Rule 1 - static assets:
-    matches: `(http.host eq "md5.me") and (http.request.uri.path
-    matches "^/(favicon|apple-touch-icon|og\.png|style\.css)")`
-    edge TTL: 1 year, browser TTL: 1 year, cache level: cache
-    everything
-  - Cache Rule 2 - HTML pages:
-    matches: `(http.host eq "md5.me") and
-    (http.request.uri.path eq "/" or
-    http.request.uri.path matches "^/(about|contact|privacy)")`
-    edge TTL: 5 minutes, browser TTL: 5 minutes, cache level:
-    cache everything
+  - Cache Rule 1 - static assets (name: md5-static-assets):
+    expression: `(http.host eq "md5.me") and (
+      http.request.uri.path eq "/favicon.ico" or
+      http.request.uri.path eq "/favicon.svg" or
+      http.request.uri.path eq "/favicon-96x96.png" or
+      http.request.uri.path eq "/apple-touch-icon.png" or
+      http.request.uri.path eq "/og.png" or
+      http.request.uri.path eq "/style.css")`
+    edge TTL: 1 year (ignore cache-control header),
+    browser TTL: 1 year (override origin).
+    Note: free plan requires `eq` operator - `matches`
+    (regex) requires Business plan.
+  - Cache Rule 2 (HTML pages): NOT created. Free plan
+    minimum edge TTL is 2 hours which would delay deploy
+    propagation. Decision: leave HTML uncached (DYNAMIC).
+    HTML is tiny and nginx serves it in microseconds;
+    the CDN benefit is marginal vs the deploy-friction cost.
 - **Verified:**
-  - `grep -r "style.css" public/ --include="*.html"` returns
-    4 lines all with `?v=1`.
-  - GH Actions deploy green.
-  - `curl -sI https://md5.me/style.css?v=1 | grep -i cf-cache-status`
-    returns `HIT` after two requests (confirms CF is caching).
-  - `curl -sI https://md5.me/ | grep -i cf-cache-status`
-    returns `HIT` after two requests.
+  - `grep -r "style.css" public/ --include="*.html"`
+    returns 4 lines all with `?v=1` ✓
+  - GH Actions deploy green (run 25437749840, 7s) ✓
+  - `cf-cache-status: HIT` on second request for
+    style.css?v=1 and og.png ✓
+  - `cf-cache-status: DYNAMIC` for / and /about/ ✓
+    (correct - HTML intentionally not cached)
 - **Open items:**
-  - Task 08 SHA fixup on next task (per the rule).
   - HSTS preload deferred (vps.md5.me blocker - see Task 07).
   - Self-host Google Fonts (removes fonts.googleapis.com
     and fonts.gstatic.com from CSP).
   - Future style.css changes: bump ?v=N in all four HTML
     files in the same commit as the CSS change.
-- **Commit:** <SHA-PLACEHOLDER> · https://github.com/makmour/md5/commit/<SHA-PLACEHOLDER>
+- **Commit:** 1287c631d5d3a2069ecd0cf5391d40826a10705e · https://github.com/makmour/md5/commit/1287c631d5d3a2069ecd0cf5391d40826a10705e
 
 ---
 

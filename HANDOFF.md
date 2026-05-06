@@ -41,6 +41,55 @@ Commit: <SHA> · https://github.com/makmour/md5/commit/<SHA>
 
 ---
 
+## 2026-05-06 · Task 05 - nginx security headers hardening
+
+- **Goal:** Ship security headers and HSTS for md5.me. All work
+  happened server-side via RunCloud panel and SSH - no repo
+  changes.
+- **Changes (server-side, not in git):**
+  - HSTS enabled via RunCloud SSL/TLS panel:
+    `Strict-Transport-Security: max-age=31536000`
+  - Four security headers added via RunCloud NGINX Config,
+    `headers` type, name `hardening`, webapp `md5`:
+    - `Content-Security-Policy` - tight policy with
+      `connect-src 'none'` (browser-enforces zero network calls),
+      `frame-ancestors 'none'`, `upgrade-insecure-requests`
+    - `Referrer-Policy: strict-origin-when-cross-origin`
+    - `Permissions-Policy` - disables camera, mic, geolocation,
+      payment, usb, interest-cohort
+    - `Cross-Origin-Opener-Policy: same-origin`
+  - RunCloud already sets `server_tokens off` and
+    `X-Content-Type-Options: nosniff` and
+    `X-Frame-Options: SAMEORIGIN` natively - no duplication needed
+  - `absolute_redirect off` deferred - cosmetic fix for curl
+    output only; Cloudflare + HSTS makes it irrelevant for
+    real users
+- **Verified:**
+  - All 7 headers confirmed live via curl:
+    `strict-transport-security: max-age=31536000`
+    `content-security-policy: default-src 'self'; ...`
+    `referrer-policy: strict-origin-when-cross-origin`
+    `permissions-policy: interest-cohort=(), ...`
+    `cross-origin-opener-policy: same-origin`
+    `x-content-type-options: nosniff`
+    `x-frame-options: SAMEORIGIN`
+  - Headers apply to /about/ and /privacy/ (site-wide)
+  - Browser DevTools console: no CSP violations on homepage
+    or tool tabs (console errors were a browser extension,
+    not site CSP)
+- **Open items:**
+  - Task 05 SHA fixup on next task (per the rule)
+  - `absolute_redirect off` deferred indefinitely
+  - HSTS preload submission deferred (decide later whether
+    to bump max-age to 2 years and submit to hstspreload.org)
+  - Self-host Google Fonts (removes third-party dependency,
+    mentioned in /privacy as "evaluating")
+  - Privacy-respecting analytics
+  - Cloudflare cache rules for static assets
+- **Commit:** <SHA-PLACEHOLDER> · https://github.com/makmour/md5/commit/<SHA-PLACEHOLDER>
+
+---
+
 ## 2026-05-06 · Task 04 - About / Contact / Privacy + shared CSS
 
 - **Goal:** Replace the three footer 404s with real pages and
@@ -84,7 +133,7 @@ Commit: <SHA> · https://github.com/makmour/md5/commit/<SHA>
   - Privacy-respecting analytics.
   - Self-host Google Fonts to remove the third-party dependency
     (mentioned in /privacy as "evaluating").
-- **Commit:** <SHA-PLACEHOLDER> · https://github.com/makmour/md5/commit/<SHA-PLACEHOLDER>
+- **Commit:** d03d26f52c2568790f2000cd2cc66062364c7c5f · https://github.com/makmour/md5/commit/d03d26f52c2568790f2000cd2cc66062364c7c5f
 
 ---
 

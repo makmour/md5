@@ -1,0 +1,1789 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>MD5.me — Hash, password & WordPress salt generator (100% client-side)</title>
+<meta name="description" content="Fast, client-side cryptographic toolkit for WordPress admins and sysadmins. MD5, SHA, bcrypt, phpass, password generator, WordPress salts and .htpasswd. Nothing ever leaves your browser.">
+<meta name="theme-color" content="#0a0e0d">
+<link rel="canonical" href="https://md5.me/">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://md5.me/">
+<meta property="og:title" content="MD5.me — client-side hash & password toolkit">
+<meta property="og:description" content="MD5, SHA, bcrypt, phpass, password generator, WordPress salts, .htpasswd. Nothing leaves your browser.">
+<meta property="og:image" content="https://md5.me/og.png">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="MD5.me — client-side hash & password toolkit">
+<meta name="twitter:description" content="MD5, SHA, bcrypt, phpass, password generator, WordPress salts, .htpasswd. Nothing leaves your browser.">
+
+<!-- Structured data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "MD5.me",
+  "url": "https://md5.me/",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Any (browser)",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "description": "Client-side cryptographic toolkit: MD5, SHA, bcrypt, phpass, password generator, WordPress salts, .htpasswd."
+}
+</script>
+
+<!-- Favicon -->
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+<!-- Fonts: a geometric sans for chrome, a mono for output. Both load with display=swap. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg:        #0a0e0d;
+    --bg-soft:   #111614;
+    --panel:    #151a18;
+    --panel-2:  #1a201d;
+    --line:      #232a27;
+    --line-soft: #1c2320;
+    --text:      #e8e6e1;
+    --text-dim:  #8a948f;
+    --text-mute: #5b6560;
+    --accent:    #7dd3c0;
+    --accent-dim:#3a6359;
+    --warn:      #ff7a6b;
+    --good:      #7dd3c0;
+
+    --font-ui:   "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+    --r-sm: 4px;
+    --r:    8px;
+    --r-lg: 14px;
+
+    --maxw: 1120px;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: var(--font-ui);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+    font-size: 16px;
+    min-height: 100vh;
+    overflow-x: hidden;
+    /* faint hex-grid backdrop, drawn with two layered repeating gradients */
+    background-image:
+      radial-gradient(ellipse 1200px 600px at 50% -10%, rgba(125, 211, 192, 0.06), transparent 60%),
+      repeating-linear-gradient(0deg,   rgba(255,255,255,0.012) 0 1px, transparent 1px 48px),
+      repeating-linear-gradient(90deg,  rgba(255,255,255,0.012) 0 1px, transparent 1px 48px);
+  }
+  ::selection { background: var(--accent); color: #0a0e0d; }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+  /* ----- Layout shell ----- */
+  .shell { max-width: var(--maxw); margin: 0 auto; padding: 24px 24px 80px; }
+
+  /* ----- Top bar ----- */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 14px 0 28px;
+    border-bottom: 1px solid var(--line-soft);
+    margin-bottom: 32px;
+  }
+  .brand {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: var(--font-mono); font-weight: 700;
+    font-size: 18px; letter-spacing: -0.01em;
+    color: var(--text);
+  }
+  .brand-mark {
+    display: inline-grid; place-items: center;
+    width: 30px; height: 30px;
+    border: 1px solid var(--accent-dim);
+    border-radius: 6px;
+    background: linear-gradient(135deg, rgba(125,211,192,0.12), transparent);
+    color: var(--accent);
+    font-family: var(--font-mono); font-weight: 700; font-size: 14px;
+  }
+  .brand .dot { color: var(--accent); }
+  .brand .tag { color: var(--text-mute); font-weight: 400; font-size: 12px; margin-left: 4px; }
+
+  .net-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 12px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--bg-soft);
+    font-family: var(--font-mono); font-size: 12px;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+  .net-pill .led {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--good);
+    box-shadow: 0 0 0 0 rgba(125,211,192,0.6);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(125,211,192,0.5); }
+    50%       { box-shadow: 0 0 0 6px rgba(125,211,192,0); }
+  }
+  .net-pill b { color: var(--text); font-weight: 500; }
+
+  /* ----- Hero ----- */
+  .hero { display: grid; grid-template-columns: 1.4fr 1fr; gap: 40px; align-items: end; margin-bottom: 36px; }
+  .hero h1 {
+    font-family: var(--font-ui);
+    font-weight: 600;
+    font-size: clamp(34px, 5.2vw, 56px);
+    line-height: 1.04;
+    letter-spacing: -0.02em;
+    margin: 0 0 16px;
+  }
+  .hero h1 .accent { color: var(--accent); }
+  .hero h1 .strike {
+    position: relative; white-space: nowrap;
+  }
+  .hero h1 .strike::after {
+    content: ""; position: absolute; left: -2%; right: -2%; top: 56%;
+    height: 3px; background: var(--warn);
+    transform: rotate(-2deg);
+  }
+  .hero p.lede {
+    color: var(--text-dim);
+    font-size: 17px;
+    max-width: 56ch;
+    margin: 0;
+  }
+  .hero-meta {
+    border-left: 1px solid var(--line);
+    padding-left: 24px;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    line-height: 1.7;
+  }
+  .hero-meta b { color: var(--text); font-weight: 500; }
+  .hero-meta .row { display: flex; justify-content: space-between; gap: 16px; padding: 4px 0; }
+  .hero-meta .row + .row { border-top: 1px dashed var(--line-soft); }
+
+  @media (max-width: 800px) {
+    .hero { grid-template-columns: 1fr; gap: 24px; }
+    .hero-meta { border-left: 0; border-top: 1px solid var(--line); padding: 16px 0 0; }
+  }
+
+  /* ----- Tabs ----- */
+  .tabs {
+    display: flex; flex-wrap: wrap; gap: 4px;
+    margin-bottom: -1px;
+    border-bottom: 1px solid var(--line);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tab {
+    appearance: none; background: transparent; border: 0; cursor: pointer;
+    color: var(--text-dim);
+    font-family: var(--font-mono); font-size: 13px; font-weight: 500;
+    padding: 12px 16px;
+    border-radius: 6px 6px 0 0;
+    border: 1px solid transparent; border-bottom: 0;
+    white-space: nowrap;
+    transition: color .15s ease, background .15s ease, border-color .15s ease;
+  }
+  .tab:hover { color: var(--text); background: var(--bg-soft); }
+  .tab[aria-selected="true"] {
+    color: var(--text);
+    background: var(--panel);
+    border-color: var(--line);
+    position: relative;
+  }
+  .tab[aria-selected="true"]::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; background: var(--panel);
+  }
+  .tab .num { color: var(--text-mute); margin-right: 6px; }
+  .tab[aria-selected="true"] .num { color: var(--accent); }
+
+  /* ----- Tool panel ----- */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 0 var(--r-lg) var(--r-lg) var(--r-lg);
+    padding: 28px;
+  }
+  .tool { display: none; }
+  .tool[data-active="true"] { display: block; animation: fade .25s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+  .tool-header {
+    display: flex; align-items: baseline; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px;
+    margin-bottom: 18px;
+  }
+  .tool-header h2 {
+    font-family: var(--font-ui); font-weight: 600;
+    font-size: 22px; letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .tool-header .sub {
+    font-family: var(--font-mono); font-size: 12px;
+    color: var(--text-mute);
+  }
+
+  /* ----- Form controls ----- */
+  label.field { display: block; margin-bottom: 14px; }
+  label.field .lbl {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+
+  textarea, input[type="text"], input[type="number"], select {
+    width: 100%;
+    background: var(--bg-soft);
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    padding: 12px 14px;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    line-height: 1.5;
+    transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+  }
+  textarea { min-height: 100px; resize: vertical; }
+  textarea:focus, input:focus, select:focus {
+    outline: none;
+    border-color: var(--accent-dim);
+    box-shadow: 0 0 0 3px rgba(125, 211, 192, 0.12);
+    background: var(--bg);
+  }
+  textarea::placeholder, input::placeholder { color: var(--text-mute); }
+
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .row-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 600px) {
+    .row-2, .row-3 { grid-template-columns: 1fr; }
+  }
+
+  .check {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    background: var(--bg-soft);
+    cursor: pointer;
+    font-size: 14px;
+    user-select: none;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .check:hover { border-color: var(--accent-dim); }
+  .check input { appearance: none; width: 16px; height: 16px; border: 1px solid var(--line); border-radius: 3px; background: var(--bg); cursor: pointer; display: inline-grid; place-items: center; flex: 0 0 auto; }
+  .check input:checked { background: var(--accent); border-color: var(--accent); }
+  .check input:checked::after { content: ""; width: 8px; height: 8px; background: var(--bg); clip-path: polygon(14% 50%, 0 65%, 38% 100%, 100% 23%, 84% 8%, 36% 70%); }
+
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 8px; }
+
+  button.btn {
+    appearance: none; cursor: pointer;
+    font-family: var(--font-ui); font-weight: 600; font-size: 14px;
+    padding: 11px 20px;
+    border-radius: var(--r);
+    border: 1px solid transparent;
+    transition: transform .08s ease, background .15s ease, border-color .15s ease, color .15s ease;
+  }
+  button.btn:active { transform: translateY(1px); }
+  button.btn-primary {
+    background: var(--accent);
+    color: #0a0e0d;
+    border-color: var(--accent);
+  }
+  button.btn-primary:hover { background: #92dccc; border-color: #92dccc; }
+  button.btn-ghost {
+    background: transparent;
+    color: var(--text);
+    border-color: var(--line);
+  }
+  button.btn-ghost:hover { border-color: var(--accent-dim); color: var(--accent); }
+  button.btn-icon {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 12px;
+    font-family: var(--font-mono); font-size: 12px;
+    background: transparent; color: var(--text-dim);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    cursor: pointer;
+    transition: color .15s, border-color .15s;
+  }
+  button.btn-icon:hover { color: var(--accent); border-color: var(--accent-dim); }
+
+  /* ----- Output ----- */
+  .output-wrap {
+    margin-top: 22px;
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    background: var(--bg);
+    overflow: hidden;
+  }
+  .output-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--line-soft);
+    background: var(--panel-2);
+    font-family: var(--font-mono); font-size: 11.5px;
+    color: var(--text-mute);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .output {
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+    color: var(--text);
+    padding: 16px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    min-height: 120px;
+    margin: 0;
+  }
+  .output.placeholder { color: var(--text-mute); font-style: normal; }
+
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--panel); border: 1px solid var(--accent-dim);
+    color: var(--text); padding: 10px 16px; border-radius: 999px;
+    font-family: var(--font-mono); font-size: 12.5px;
+    opacity: 0; pointer-events: none;
+    transition: opacity .2s ease, transform .25s ease;
+    z-index: 100;
+    box-shadow: 0 10px 40px rgba(0,0,0,.4);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ----- Info / how-to ----- */
+  .info {
+    display: grid; grid-template-columns: 1.3fr 1fr; gap: 32px;
+    margin-top: 36px;
+  }
+  @media (max-width: 800px) { .info { grid-template-columns: 1fr; } }
+  .info h3 {
+    font-family: var(--font-ui); font-weight: 600;
+    font-size: 16px;
+    margin: 0 0 10px;
+    color: var(--text);
+  }
+  .info p, .info li { color: var(--text-dim); font-size: 14.5px; line-height: 1.65; }
+  .info ol, .info ul { padding-left: 20px; margin: 0; }
+  .info li + li { margin-top: 4px; }
+  .info .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    padding: 20px 22px;
+  }
+  .info .card.warn {
+    border-color: rgba(255,122,107,0.25);
+    background: linear-gradient(180deg, rgba(255,122,107,0.04), transparent 50%), var(--panel);
+  }
+  .info .card.warn h3 { color: var(--warn); }
+
+  /* ----- Footer / SudoWP ----- */
+  .biz {
+    margin-top: 56px;
+    padding: 24px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    background: linear-gradient(180deg, rgba(125,211,192,0.04), transparent 60%), var(--panel);
+    display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: center;
+  }
+  .biz h4 { margin: 0 0 4px; font-size: 16px; font-weight: 600; }
+  .biz p { margin: 0; color: var(--text-dim); font-size: 14px; }
+  .biz .cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 18px;
+    border: 1px solid var(--accent-dim);
+    border-radius: var(--r);
+    color: var(--accent);
+    font-family: var(--font-mono); font-size: 13px; font-weight: 500;
+    transition: background .15s, color .15s;
+  }
+  .biz .cta:hover { background: var(--accent); color: #0a0e0d; text-decoration: none; }
+  @media (max-width: 600px) {
+    .biz { grid-template-columns: 1fr; }
+  }
+
+  footer.foot {
+    margin-top: 36px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line-soft);
+    color: var(--text-mute);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+  }
+  footer.foot a { color: var(--text-dim); }
+  footer.foot a:hover { color: var(--accent); }
+
+  /* ----- Hidden / utility ----- */
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ============== TOP BAR ============== -->
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="MD5.me home">
+      <span class="brand-mark" aria-hidden="true">M5</span>
+      <span>md5<span class="dot">.</span>me</span>
+      <span class="tag">/ crypto toolkit</span>
+    </a>
+    <div class="net-pill" title="Live counter of network requests since this page loaded. Verify in DevTools → Network.">
+      <span class="led" aria-hidden="true"></span>
+      <span><b id="netCount">0</b> network calls since load</span>
+    </div>
+  </header>
+
+  <!-- ============== HERO ============== -->
+  <section class="hero">
+    <div>
+      <h1>
+        Hash, generate, and rotate keys —
+        <span class="accent">in your browser.</span>
+        <br>
+        <span class="strike">Not on our server.</span>
+      </h1>
+      <p class="lede">
+        A small, fast, client-side toolkit for WordPress admins and sysadmins.
+        Hashing, password generation, and WordPress salts run entirely in your tab.
+        No requests, no logs, no telemetry.
+      </p>
+    </div>
+    <div class="hero-meta" aria-label="Tech facts">
+      <div class="row"><span>runtime</span><b>browser only</b></div>
+      <div class="row"><span>requests on generate</span><b>0</b></div>
+      <div class="row"><span>storage</span><b>none</b></div>
+      <div class="row"><span>tracking</span><b>privacy-first analytics</b></div>
+    </div>
+  </section>
+
+  <!-- ============== TABS ============== -->
+  <nav class="tabs" role="tablist" aria-label="Tools">
+    <button class="tab" role="tab" aria-selected="true"  data-tab="md5"      id="tab-md5"><span class="num">01</span>MD5 hash</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="sha"      id="tab-sha"><span class="num">02</span>SHA-1 / SHA-256</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="bcrypt"   id="tab-bcrypt"><span class="num">03</span>bcrypt / phpass</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="password" id="tab-password"><span class="num">04</span>Password</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="wpsalt"   id="tab-wpsalt"><span class="num">05</span>WP secret keys</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="htpasswd" id="tab-htpasswd"><span class="num">06</span>.htpasswd</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="wpreset"  id="tab-wpreset"><span class="num">07</span>WP password reset SQL</button>
+  </nav>
+
+  <div class="panel">
+
+    <!-- ===== TOOL 01: MD5 ===== -->
+    <section class="tool" data-tool="md5" data-active="true" aria-labelledby="tab-md5">
+      <div class="tool-header">
+        <h2>MD5 hash generator</h2>
+        <span class="sub">// 128-bit · legacy file integrity, interop, never passwords</span>
+      </div>
+
+      <label class="field">
+        <span class="lbl">Input</span>
+        <textarea id="md5-input" rows="4" placeholder="Paste any text or list of strings..." spellcheck="false" autocomplete="off"></textarea>
+      </label>
+
+      <label class="check">
+        <input type="checkbox" id="md5-multi">
+        <span>Treat each line as a separate string</span>
+      </label>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="md5-generate">Generate hash</button>
+        <button class="btn btn-ghost" id="md5-clear">Clear</button>
+      </div>
+
+      <div class="output-wrap">
+        <div class="output-bar">
+          <span>output · md5</span>
+          <button class="btn-icon" data-copy="md5-output">Copy</button>
+        </div>
+        <pre class="output placeholder" id="md5-output">// hash output appears here</pre>
+      </div>
+
+      <div class="info">
+        <div class="card">
+          <h3>What MD5 is good for</h3>
+          <p>MD5 is a 128-bit cryptographic hash designed by Ronald Rivest in 1991. It still has legitimate uses: file integrity checks, ETags, deduplication, cache keys, fingerprinting non-secret data, and interop with legacy systems that demand it.</p>
+        </div>
+        <div class="card warn">
+          <h3>Don't use MD5 for passwords</h3>
+          <p>MD5 is broken for security purposes — collisions are trivial to generate. Modern WordPress uses bcrypt (and phpass on older installs), not raw MD5. If you're hashing a password, switch to the bcrypt / phpass tab.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TOOL 02: SHA ===== -->
+    <section class="tool" data-tool="sha" aria-labelledby="tab-sha">
+      <div class="tool-header">
+        <h2>SHA-1 &amp; SHA-256</h2>
+        <span class="sub">// SubtleCrypto · runs natively in your browser</span>
+      </div>
+
+      <label class="field">
+        <span class="lbl">Input</span>
+        <textarea id="sha-input" rows="4" placeholder="Paste text..." spellcheck="false" autocomplete="off"></textarea>
+      </label>
+
+      <div class="row-2">
+        <label class="field">
+          <span class="lbl">Algorithm</span>
+          <select id="sha-algo">
+            <option value="SHA-1">SHA-1</option>
+            <option value="SHA-256" selected>SHA-256</option>
+            <option value="SHA-384">SHA-384</option>
+            <option value="SHA-512">SHA-512</option>
+          </select>
+        </label>
+        <label class="check" style="align-self: end; height: 44px;">
+          <input type="checkbox" id="sha-multi">
+          <span>Treat each line separately</span>
+        </label>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="sha-generate">Generate hash</button>
+        <button class="btn btn-ghost" id="sha-clear">Clear</button>
+      </div>
+
+      <div class="output-wrap">
+        <div class="output-bar">
+          <span>output · <span id="sha-algo-label">sha-256</span></span>
+          <button class="btn-icon" data-copy="sha-output">Copy</button>
+        </div>
+        <pre class="output placeholder" id="sha-output">// hash output appears here</pre>
+      </div>
+
+      <div class="info">
+        <div class="card">
+          <h3>When to use SHA</h3>
+          <p>SHA-256 is the default modern fingerprint hash — file checksums, content-addressing, JWTs, signatures. SHA-1 is deprecated for security but still appears in legacy systems (git, old TLS). Like MD5, none of these are password hashes on their own.</p>
+        </div>
+        <div class="card">
+          <h3>How this works</h3>
+          <p>This page calls <code style="font-family:var(--font-mono); color:var(--accent);">window.crypto.subtle.digest()</code> — the WebCrypto API built into your browser. The plaintext never leaves the tab.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TOOL 03: BCRYPT / PHPASS ===== -->
+    <section class="tool" data-tool="bcrypt" aria-labelledby="tab-bcrypt">
+      <div class="tool-header">
+        <h2>bcrypt &amp; phpass (WordPress)</h2>
+        <span class="sub">// modern WP password hashes for direct DB injection</span>
+      </div>
+
+      <label class="field">
+        <span class="lbl">Plaintext password</span>
+        <input type="text" id="bc-input" placeholder="The new password..." spellcheck="false" autocomplete="off">
+      </label>
+
+      <div class="row-2">
+        <label class="field">
+          <span class="lbl">Algorithm</span>
+          <select id="bc-algo">
+            <option value="bcrypt" selected>bcrypt ($2y$) — WP 6.8+</option>
+            <option value="phpass">phpass ($P$) — legacy WP</option>
+          </select>
+        </label>
+        <label class="field">
+          <span class="lbl">Cost / iterations</span>
+          <select id="bc-cost">
+            <option value="8">8 (fast)</option>
+            <option value="10" selected>10 (balanced — WP default)</option>
+            <option value="12">12 (slow, stronger)</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="bc-generate">Generate hash</button>
+        <button class="btn btn-ghost" id="bc-clear">Clear</button>
+      </div>
+
+      <div class="output-wrap">
+        <div class="output-bar">
+          <span>output · <span id="bc-algo-label">bcrypt</span></span>
+          <button class="btn-icon" data-copy="bc-output">Copy</button>
+        </div>
+        <pre class="output placeholder" id="bc-output">// hash output appears here</pre>
+      </div>
+
+      <div class="info">
+        <div class="card">
+          <h3>Which one do I want?</h3>
+          <p>WordPress 6.8+ stores passwords as bcrypt (<code style="font-family:var(--font-mono);">$2y$</code>). Older sites use phpass (<code style="font-family:var(--font-mono);">$P$</code>). Both formats are accepted on read, so a fresh bcrypt hash works on any modern WP. Pick phpass only if you're building a fixture or testing a legacy install.</p>
+        </div>
+        <div class="card warn">
+          <h3>Hashing is slow on purpose</h3>
+          <p>bcrypt at cost 10 takes ~50–100ms per hash; cost 12 is ~4× slower. That's the feature — it makes brute force expensive. Generation is synchronous and runs on this tab.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TOOL 04: PASSWORD ===== -->
+    <section class="tool" data-tool="password" aria-labelledby="tab-password">
+      <div class="tool-header">
+        <h2>Password generator</h2>
+        <span class="sub">// crypto.getRandomValues · cryptographically secure</span>
+      </div>
+
+      <div class="row-3">
+        <label class="field">
+          <span class="lbl">Length</span>
+          <input type="number" id="pw-length" min="6" max="128" value="20" step="1">
+        </label>
+        <label class="field">
+          <span class="lbl">Count</span>
+          <input type="number" id="pw-count" min="1" max="50" value="5" step="1">
+        </label>
+        <label class="field">
+          <span class="lbl">Style</span>
+          <select id="pw-style">
+            <option value="strong" selected>Strong (a-z A-Z 0-9 symbols)</option>
+            <option value="alnum">Alphanumeric only</option>
+            <option value="words">Memorable (4 random words)</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="row-2">
+        <label class="check"><input type="checkbox" id="pw-no-similar" checked><span>Avoid look-alike chars (1lI 0Oo)</span></label>
+        <label class="check"><input type="checkbox" id="pw-safe-symbols"><span>Restrict symbols to web-safe set</span></label>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="pw-generate">Generate</button>
+        <button class="btn btn-ghost" id="pw-clear">Clear</button>
+      </div>
+
+      <div class="output-wrap">
+        <div class="output-bar">
+          <span>output · passwords</span>
+          <button class="btn-icon" data-copy="pw-output">Copy</button>
+        </div>
+        <pre class="output placeholder" id="pw-output">// passwords appear here</pre>
+      </div>
+
+      <div class="info">
+        <div class="card">
+          <h3>Length beats complexity</h3>
+          <p>Every extra character roughly doubles the brute-force work. A 20-character random password is overwhelmingly stronger than an 8-character one with three symbols. 16+ for normal accounts, 24+ for admin / root / cPanel.</p>
+        </div>
+        <div class="card">
+          <h3>Avoid look-alikes when typing matters</h3>
+          <p>If a password will be transcribed by a human (server console, mobile keyboard), the "avoid look-alikes" option strips <code style="font-family:var(--font-mono);">1 l I 0 O o</code> so nobody calls you at 2am about a "wrong password" that's actually a confused 1 vs l.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TOOL 05: WP SALT ===== -->
+    <section class="tool" data-tool="wpsalt" aria-labelledby="tab-wpsalt">
+      <div class="tool-header">
+        <h2>WordPress secret keys (salts)</h2>
+        <span class="sub">// drop-in replacement for the SALT block in wp-config.php</span>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="salt-generate">Generate fresh salts</button>
+        <button class="btn btn-ghost" id="salt-clear">Clear</button>
+      </div>
+
+      <div class="output-wrap">
+        <div class="output-bar">
+          <span>output · wp-config.php block</span>
+          <button class="btn-icon" data-copy="salt-output">Copy</button>
+        </div>
+        <pre class="output placeholder" id="salt-output">// salt block appears here</pre>
+      </div>
+
+      <div class="info">
+        <div class="card">
+          <h3>What WP salts do</h3>
+          <p>The eight constants — <code style="font-family:var(--font-mono);">AUTH_KEY</code>, <code style="font-family:var(--font-mono);">SECURE_AUTH_KEY</code>, <code style="font-family:var(--font-mono);">LOGGED_IN_KEY</code>, <code style="font-family:var(--font-mono);">NONCE_KEY</code>, and the four <code style="font-family:var(--font-mono);">_SALT</code> pairs — sign and encrypt WordPress auth cookies and nonces. Replace the entire block in <code style="font-family:var(--font-mono);">wp-config.php</code>; rotating them logs out every session instantly.</p>
+        </div>
+        <div class="card warn">
+          <h3>If you're rotating after a hack</h3>
+          <p>Replacing salts is step <em>one</em> of incident response — it kicks the attacker out of any stolen session. You also need to: change the DB password, force-reset all admin passwords, audit users for unknown admins, and check active sessions and application passwords. <a href="https://sudowp.com/" rel="noopener">SudoWP →</a></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TOOL 06: HTPASSWD ===== -->
+    <section class="tool" data-tool="htpasswd" aria-labelledby="tab-htpasswd">
+      <div class="tool-header">
+        <h2>.htpasswd entry</h2>
+        <span class="sub">// for protecting wp-login.php, wp-admin, or any nginx/Apache resource</span>
+      </div>
+
+      <div class="row-2">
+        <label class="field">
+          <span class="lbl">Username</span>
+          <input type="text" id="ht-user" placeholder="e.g. admin" autocomplete="off" spellcheck="false">
+        </label>
+        <label class="field">
+          <span class="lbl">Password</span>
+          <input type="text" id="ht-pass" placeholder="plaintext" autocomplete="off" spellcheck="false">
+        </label>
+      </div>
+
+      <label class="field">
+        <span class="lbl">Hash format</span>
+        <select id="ht-algo">
+          <option value="bcrypt" selected>bcrypt ($2y$) — Apache 2.4+ / nginx auth_basic — recommended</option>
+          <option value="apr1">APR1 ($apr1$) — works everywhere, weaker</option>
+          <option value="sha1">SHA-1 ({SHA}) — fast, legacy</option>
+        </select>
+      </label>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="ht-generate">Generate entry</button>
+        <button class="btn btn-ghost" id="ht-clear">Clear</button>
+      </div>
+
+      <div class="output-wrap">
+        <div class="output-bar">
+          <span>output · .htpasswd line</span>
+          <button class="btn-icon" data-copy="ht-output">Copy</button>
+        </div>
+        <pre class="output placeholder" id="ht-output">// .htpasswd entry appears here</pre>
+      </div>
+
+      <div class="info">
+        <div class="card">
+          <h3>Use for wp-login brute-force protection</h3>
+          <p>An <code style="font-family:var(--font-mono);">.htpasswd</code> in front of <code style="font-family:var(--font-mono);">wp-login.php</code> stops 99% of automated WordPress login attacks before PHP ever runs. Pair with fail2ban watching the auth log for serious traffic.</p>
+        </div>
+        <div class="card">
+          <h3>Drop in</h3>
+          <p>Append the generated line to your existing <code style="font-family:var(--font-mono);">.htpasswd</code>, or save it as a new file. RunCloud users: add it via the "Basic Auth" panel under your web app, or reference it manually in your nginx config.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TOOL 07: WP PASSWORD RESET SQL ===== -->
+    <section class="tool" data-tool="wpreset" aria-labelledby="tab-wpreset">
+      <div class="tool-header">
+        <h2>WordPress admin password reset SQL</h2>
+        <span class="sub">// when you're locked out and need direct DB access</span>
+      </div>
+
+      <div class="row-3">
+        <label class="field">
+          <span class="lbl">Username or email</span>
+          <input type="text" id="wpr-user" placeholder="admin" autocomplete="off" spellcheck="false">
+        </label>
+        <label class="field">
+          <span class="lbl">New password</span>
+          <input type="text" id="wpr-pass" placeholder="strong password" autocomplete="off" spellcheck="false">
+        </label>
+        <label class="field">
+          <span class="lbl">Table prefix</span>
+          <input type="text" id="wpr-prefix" value="wp_" autocomplete="off" spellcheck="false">
+        </label>
+      </div>
+
+      <label class="check">
+        <input type="checkbox" id="wpr-by-email">
+        <span>Match by email instead of user_login</span>
+      </label>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="wpr-generate">Generate SQL</button>
+        <button class="btn btn-ghost" id="wpr-clear">Clear</button>
+      </div>
+
+      <div class="output-wrap">
+        <div class="output-bar">
+          <span>output · sql</span>
+          <button class="btn-icon" data-copy="wpr-output">Copy</button>
+        </div>
+        <pre class="output placeholder" id="wpr-output">// SQL UPDATE statement appears here</pre>
+      </div>
+
+      <div class="info">
+        <div class="card">
+          <h3>Run via phpMyAdmin or wp-cli</h3>
+          <p>Paste the generated <code style="font-family:var(--font-mono);">UPDATE</code> in phpMyAdmin → SQL tab, or pipe it: <code style="font-family:var(--font-mono);">wp db query "$(pbpaste)"</code>. The generated hash is bcrypt — accepted by every modern WP version.</p>
+        </div>
+        <div class="card warn">
+          <h3>Always back up first</h3>
+          <p>This SQL writes directly to <code style="font-family:var(--font-mono);">wp_users</code>. <code style="font-family:var(--font-mono);">mysqldump</code> the database (or snapshot the VPS) before running anything. The query also clears <code style="font-family:var(--font-mono);">user_activation_key</code> as a precaution.</p>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /panel -->
+
+  <!-- ============== BIZ STRIP ============== -->
+  <aside class="biz">
+    <div>
+      <h4>Built by a WordPress security consultant.</h4>
+      <p>If you're rotating salts because something feels off — or you've already confirmed a compromise — I clean infected sites and harden them so it doesn't happen again.</p>
+    </div>
+    <a class="cta" href="https://sudowp.com/" rel="noopener">
+      sudowp.com →
+    </a>
+  </aside>
+
+  <!-- ============== FOOTER ============== -->
+  <footer class="foot">
+    <div>© <span id="year"></span> md5.me · everything client-side · zero tracking on generate</div>
+    <div>
+      <a href="/about.html">About</a>
+      &nbsp;·&nbsp;
+      <a href="/contact.html">Contact</a>
+      &nbsp;·&nbsp;
+      <a href="/privacy.html">Privacy</a>
+    </div>
+  </footer>
+
+</div><!-- /shell -->
+
+<div class="toast" id="toast" role="status" aria-live="polite">Copied to clipboard</div>
+
+<!-- ============================================================
+     SCRIPTS — all crypto runs in this tab. Verify in DevTools.
+     ============================================================ -->
+<script>
+(() => {
+  'use strict';
+
+  /* -------------------------------------------------------------
+     0. Tiny helpers
+     ------------------------------------------------------------- */
+  const $ = (id) => document.getElementById(id);
+  const enc = new TextEncoder();
+  const toHex = (buf) => {
+    const b = new Uint8Array(buf);
+    let s = '';
+    for (let i = 0; i < b.length; i++) s += b[i].toString(16).padStart(2, '0');
+    return s;
+  };
+  const toast = (msg) => {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => t.classList.remove('show'), 1600);
+  };
+  const setOutput = (id, text, isPlaceholder = false) => {
+    const el = $(id);
+    el.textContent = text;
+    el.classList.toggle('placeholder', !!isPlaceholder);
+  };
+
+  /* -------------------------------------------------------------
+     1. Network-call counter (the trust pill in the header)
+     We monkey-patch fetch + XHR + sendBeacon and count any
+     non-data:/blob: call. Always shows 0 during generation.
+     ------------------------------------------------------------- */
+  let _net = 0;
+  const bumpNet = () => { _net++; $('netCount').textContent = String(_net); };
+  const _origFetch = window.fetch;
+  if (_origFetch) {
+    window.fetch = function(...args) {
+      const url = String(args[0] && args[0].url ? args[0].url : args[0] || '');
+      if (url && !url.startsWith('data:') && !url.startsWith('blob:')) bumpNet();
+      return _origFetch.apply(this, args);
+    };
+  }
+  const _origOpen = XMLHttpRequest.prototype.open;
+  XMLHttpRequest.prototype.open = function(method, url, ...rest) {
+    if (url && !String(url).startsWith('data:') && !String(url).startsWith('blob:')) bumpNet();
+    return _origOpen.call(this, method, url, ...rest);
+  };
+  if (navigator.sendBeacon) {
+    const _origBeacon = navigator.sendBeacon.bind(navigator);
+    navigator.sendBeacon = function(...a) { bumpNet(); return _origBeacon(...a); };
+  }
+
+  /* -------------------------------------------------------------
+     2. Tab switching
+     ------------------------------------------------------------- */
+  const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
+  const tools = Array.from(document.querySelectorAll('[data-tool]'));
+  const setTab = (name, push = true) => {
+    tabs.forEach(t => t.setAttribute('aria-selected', String(t.dataset.tab === name)));
+    tools.forEach(t => t.setAttribute('data-active', String(t.dataset.tool === name)));
+    if (push && location.hash !== '#' + name) history.replaceState(null, '', '#' + name);
+  };
+  tabs.forEach(t => t.addEventListener('click', () => setTab(t.dataset.tab)));
+  // honour URL hash on load
+  const initial = (location.hash || '').replace('#', '');
+  if (initial && tools.some(t => t.dataset.tool === initial)) setTab(initial, false);
+  // keyboard nav (left/right between tabs)
+  document.querySelector('.tabs').addEventListener('keydown', (e) => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+    const i = tabs.findIndex(t => t.getAttribute('aria-selected') === 'true');
+    let n = i;
+    if (e.key === 'ArrowLeft')  n = (i - 1 + tabs.length) % tabs.length;
+    if (e.key === 'ArrowRight') n = (i + 1) % tabs.length;
+    if (e.key === 'Home') n = 0;
+    if (e.key === 'End') n = tabs.length - 1;
+    tabs[n].focus(); setTab(tabs[n].dataset.tab);
+  });
+
+  /* -------------------------------------------------------------
+     3. Copy buttons
+     ------------------------------------------------------------- */
+  document.querySelectorAll('[data-copy]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const target = $(btn.dataset.copy);
+      if (!target) return;
+      const text = target.textContent;
+      if (!text || target.classList.contains('placeholder')) {
+        toast('Nothing to copy yet'); return;
+      }
+      try {
+        await navigator.clipboard.writeText(text);
+        toast('Copied to clipboard');
+      } catch {
+        // fallback
+        const ta = document.createElement('textarea');
+        ta.value = text; document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); ta.remove();
+        toast('Copied');
+      }
+    });
+  });
+
+  /* -------------------------------------------------------------
+     4. MD5 implementation (RFC 1321) — compact, ~2KB
+     Self-contained, no deps. Returns lowercase hex.
+     ------------------------------------------------------------- */
+  function md5(message) {
+    // Convert string -> UTF-8 byte array
+    const bytes = enc.encode(message);
+    const len = bytes.length;
+    // Pre-processing: append padding bits
+    const totalLen = (((len + 8) >>> 6) + 1) * 64;
+    const buf = new Uint8Array(totalLen);
+    buf.set(bytes);
+    buf[len] = 0x80;
+    // append length in bits (little-endian 64)
+    const bitLen = len * 8;
+    buf[totalLen - 8] = bitLen        & 0xff;
+    buf[totalLen - 7] = (bitLen >>> 8)  & 0xff;
+    buf[totalLen - 6] = (bitLen >>> 16) & 0xff;
+    buf[totalLen - 5] = (bitLen >>> 24) & 0xff;
+    // (top 32 bits left at zero — fine for messages < 2^32 bits)
+
+    let a = 0x67452301, b = 0xefcdab89, c = 0x98badcfe, d = 0x10325476;
+
+    const K = [
+      0xd76aa478,0xe8c7b756,0x242070db,0xc1bdceee, 0xf57c0faf,0x4787c62a,0xa8304613,0xfd469501,
+      0x698098d8,0x8b44f7af,0xffff5bb1,0x895cd7be, 0x6b901122,0xfd987193,0xa679438e,0x49b40821,
+      0xf61e2562,0xc040b340,0x265e5a51,0xe9b6c7aa, 0xd62f105d,0x02441453,0xd8a1e681,0xe7d3fbc8,
+      0x21e1cde6,0xc33707d6,0xf4d50d87,0x455a14ed, 0xa9e3e905,0xfcefa3f8,0x676f02d9,0x8d2a4c8a,
+      0xfffa3942,0x8771f681,0x6d9d6122,0xfde5380c, 0xa4beea44,0x4bdecfa9,0xf6bb4b60,0xbebfbc70,
+      0x289b7ec6,0xeaa127fa,0xd4ef3085,0x04881d05, 0xd9d4d039,0xe6db99e5,0x1fa27cf8,0xc4ac5665,
+      0xf4292244,0x432aff97,0xab9423a7,0xfc93a039, 0x655b59c3,0x8f0ccc92,0xffeff47d,0x85845dd1,
+      0x6fa87e4f,0xfe2ce6e0,0xa3014314,0x4e0811a1, 0xf7537e82,0xbd3af235,0x2ad7d2bb,0xeb86d391
+    ];
+    const S = [
+      7,12,17,22, 7,12,17,22, 7,12,17,22, 7,12,17,22,
+      5, 9,14,20, 5, 9,14,20, 5, 9,14,20, 5, 9,14,20,
+      4,11,16,23, 4,11,16,23, 4,11,16,23, 4,11,16,23,
+      6,10,15,21, 6,10,15,21, 6,10,15,21, 6,10,15,21
+    ];
+    const rotl = (x, n) => ((x << n) | (x >>> (32 - n))) >>> 0;
+    const add32 = (x, y) => ((x + y) & 0xffffffff) >>> 0;
+
+    for (let off = 0; off < totalLen; off += 64) {
+      const M = new Array(16);
+      for (let i = 0; i < 16; i++) {
+        const j = off + i * 4;
+        M[i] = (buf[j]) | (buf[j+1] << 8) | (buf[j+2] << 16) | (buf[j+3] << 24);
+        M[i] = M[i] >>> 0;
+      }
+      let A = a, B = b, C = c, D = d;
+      for (let i = 0; i < 64; i++) {
+        let F, g;
+        if (i < 16)      { F = (B & C) | ((~B) & D); g = i; }
+        else if (i < 32) { F = (D & B) | ((~D) & C); g = (5 * i + 1) % 16; }
+        else if (i < 48) { F = B ^ C ^ D;            g = (3 * i + 5) % 16; }
+        else             { F = C ^ (B | (~D));      g = (7 * i)     % 16; }
+        F = (F + A + K[i] + M[g]) >>> 0;
+        A = D;
+        D = C;
+        C = B;
+        B = add32(B, rotl(F, S[i]));
+      }
+      a = add32(a, A); b = add32(b, B); c = add32(c, C); d = add32(d, D);
+    }
+    const toLEHex = (n) => {
+      const b0 = n & 0xff, b1 = (n >>> 8) & 0xff, b2 = (n >>> 16) & 0xff, b3 = (n >>> 24) & 0xff;
+      return [b0, b1, b2, b3].map(x => x.toString(16).padStart(2, '0')).join('');
+    };
+    return toLEHex(a) + toLEHex(b) + toLEHex(c) + toLEHex(d);
+  }
+
+  /* -------------------------------------------------------------
+     5. MD5 tab wiring
+     ------------------------------------------------------------- */
+  $('md5-generate').addEventListener('click', () => {
+    const text = $('md5-input').value;
+    if (!text) { setOutput('md5-output', '// hash output appears here', true); return; }
+    const multi = $('md5-multi').checked;
+    const result = multi
+      ? text.split(/\r?\n/).filter(l => l.length).map(l => `${md5(l)}  ${l}`).join('\n')
+      : md5(text);
+    setOutput('md5-output', result);
+  });
+  $('md5-clear').addEventListener('click', () => {
+    $('md5-input').value = '';
+    setOutput('md5-output', '// hash output appears here', true);
+  });
+
+  /* -------------------------------------------------------------
+     6. SHA tab wiring (WebCrypto)
+     ------------------------------------------------------------- */
+  async function shaHash(algo, text) {
+    const buf = await crypto.subtle.digest(algo, enc.encode(text));
+    return toHex(buf);
+  }
+  $('sha-algo').addEventListener('change', () => {
+    $('sha-algo-label').textContent = $('sha-algo').value.toLowerCase();
+  });
+  $('sha-generate').addEventListener('click', async () => {
+    const text = $('sha-input').value;
+    if (!text) { setOutput('sha-output', '// hash output appears here', true); return; }
+    const algo = $('sha-algo').value;
+    const multi = $('sha-multi').checked;
+    let result;
+    if (multi) {
+      const lines = text.split(/\r?\n/).filter(l => l.length);
+      const hashes = await Promise.all(lines.map(l => shaHash(algo, l)));
+      result = hashes.map((h, i) => `${h}  ${lines[i]}`).join('\n');
+    } else {
+      result = await shaHash(algo, text);
+    }
+    setOutput('sha-output', result);
+  });
+  $('sha-clear').addEventListener('click', () => {
+    $('sha-input').value = '';
+    setOutput('sha-output', '// hash output appears here', true);
+  });
+
+  /* -------------------------------------------------------------
+     7. bcrypt + phpass implementations
+     bcrypt: minimal, correct $2y$ implementation in pure JS.
+     phpass: HMC's portable hashing, $P$ with 2^N rounds of MD5.
+     Both run on the main thread; cost 10 ~50-100ms.
+     ------------------------------------------------------------- */
+
+  // ===== bcrypt =====
+  // Adapted/condensed from public-domain references (Provos & Mazières / OpenBSD).
+  const bcrypt = (() => {
+    const BCRYPT_SALT_LEN = 16;
+    const BASE64_CODE = './ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const INDEX_64 = (() => {
+      const a = new Int8Array(256).fill(-1);
+      for (let i = 0; i < BASE64_CODE.length; i++) a[BASE64_CODE.charCodeAt(i)] = i;
+      return a;
+    })();
+    function encodeBase64(d, len) {
+      let off = 0, rs = '';
+      while (off < len) {
+        let c1 = d[off++] & 0xff;
+        rs += BASE64_CODE[(c1 >> 2) & 0x3f];
+        c1 = (c1 & 0x03) << 4;
+        if (off >= len) { rs += BASE64_CODE[c1 & 0x3f]; break; }
+        let c2 = d[off++] & 0xff;
+        c1 |= (c2 >> 4) & 0x0f;
+        rs += BASE64_CODE[c1 & 0x3f];
+        c1 = (c2 & 0x0f) << 2;
+        if (off >= len) { rs += BASE64_CODE[c1 & 0x3f]; break; }
+        c2 = d[off++] & 0xff;
+        c1 |= (c2 >> 6) & 0x03;
+        rs += BASE64_CODE[c1 & 0x3f];
+        rs += BASE64_CODE[c2 & 0x3f];
+      }
+      return rs;
+    }
+    function decodeBase64(s, maxLen) {
+      const rs = [];
+      let off = 0, slen = s.length, olen = 0;
+      while (off < slen - 1 && olen < maxLen) {
+        const c1 = INDEX_64[s.charCodeAt(off++)];
+        const c2 = INDEX_64[s.charCodeAt(off++)];
+        if (c1 === -1 || c2 === -1) break;
+        rs[olen++] = ((c1 << 2) | ((c2 & 0x30) >> 4)) & 0xff;
+        if (olen >= maxLen || off >= slen) break;
+        const c3 = INDEX_64[s.charCodeAt(off++)];
+        if (c3 === -1) break;
+        rs[olen++] = (((c2 & 0x0f) << 4) | ((c3 & 0x3c) >> 2)) & 0xff;
+        if (olen >= maxLen || off >= slen) break;
+        const c4 = INDEX_64[s.charCodeAt(off++)];
+        rs[olen++] = (((c3 & 0x03) << 6) | c4) & 0xff;
+      }
+      return rs;
+    }
+
+    // Blowfish P-array and S-boxes (initial values from pi)
+    const P_orig = [
+      0x243f6a88,0x85a308d3,0x13198a2e,0x03707344,0xa4093822,0x299f31d0,0x082efa98,0xec4e6c89,
+      0x452821e6,0x38d01377,0xbe5466cf,0x34e90c6c,0xc0ac29b7,0xc97c50dd,0x3f84d5b5,0xb5470917,
+      0x9216d5d9,0x8979fb1b
+    ];
+    // S-boxes (4 × 256). These are the standard Blowfish S-boxes.
+    // For brevity in source, generate them via a known compressed seed format below.
+    // (Full constants pasted here.)
+    const S_orig = [
+      // S0
+      [0xd1310ba6,0x98dfb5ac,0x2ffd72db,0xd01adfb7,0xb8e1afed,0x6a267e96,0xba7c9045,0xf12c7f99,
+       0x24a19947,0xb3916cf7,0x0801f2e2,0x858efc16,0x636920d8,0x71574e69,0xa458fea3,0xf4933d7e,
+       0x0d95748f,0x728eb658,0x718bcd58,0x82154aee,0x7b54a41d,0xc25a59b5,0x9c30d539,0x2af26013,
+       0xc5d1b023,0x286085f0,0xca417918,0xb8db38ef,0x8e79dcb0,0x603a180e,0x6c9e0e8b,0xb01e8a3e,
+       0xd71577c1,0xbd314b27,0x78af2fda,0x55605c60,0xe65525f3,0xaa55ab94,0x57489862,0x63e81440,
+       0x55ca396a,0x2aab10b6,0xb4cc5c34,0x1141e8ce,0xa15486af,0x7c72e993,0xb3ee1411,0x636fbc2a,
+       0x2ba9c55d,0x741831f6,0xce5c3e16,0x9b87931e,0xafd6ba33,0x6c24cf5c,0x7a325381,0x28958677,
+       0x3b8f4898,0x6b4bb9af,0xc4bfe81b,0x66282193,0x61d809cc,0xfb21a991,0x487cac60,0x5dec8032,
+       0xef845d5d,0xe98575b1,0xdc262302,0xeb651b88,0x23893e81,0xd396acc5,0x0f6d6ff3,0x83f44239,
+       0x2e0b4482,0xa4842004,0x69c8f04a,0x9e1f9b5e,0x21c66842,0xf6e96c9a,0x670c9c61,0xabd388f0,
+       0x6a51a0d2,0xd8542f68,0x960fa728,0xab5133a3,0x6eef0b6c,0x137a3be4,0xba3bf050,0x7efb2a98,
+       0xa1f1651d,0x39af0176,0x66ca593e,0x82430e88,0x8cee8619,0x456f9fb4,0x7d84a5c3,0x3b8b5ebe,
+       0xe06f75d8,0x85c12073,0x401a449f,0x56c16aa6,0x4ed3aa62,0x363f7706,0x1bfedf72,0x429b023d,
+       0x37d0d724,0xd00a1248,0xdb0fead3,0x49f1c09b,0x075372c9,0x80991b7b,0x25d479d8,0xf6e8def7,
+       0xe3fe501a,0xb6794c3b,0x976ce0bd,0x04c006ba,0xc1a94fb6,0x409f60c4,0x5e5c9ec2,0x196a2463,
+       0x68fb6faf,0x3e6c53b5,0x1339b2eb,0x3b52ec6f,0x6dfc511f,0x9b30952c,0xcc814544,0xaf5ebd09,
+       0xbee3d004,0xde334afd,0x660f2807,0x192e4bb3,0xc0cba857,0x45c8740f,0xd20b5f39,0xb9d3fbdb,
+       0x5579c0bd,0x1a60320a,0xd6a100c6,0x402c7279,0x679f25fe,0xfb1fa3cc,0x8ea5e9f8,0xdb3222f8,
+       0x3c7516df,0xfd616b15,0x2f501ec8,0xad0552ab,0x323db5fa,0xfd238760,0x53317b48,0x3e00df82,
+       0x9e5c57bb,0xca6f8ca0,0x1a87562e,0xdf1769db,0xd542a8f6,0x287effc3,0xac6732c6,0x8c4f5573,
+       0x695b27b0,0xbbca58c8,0xe1ffa35d,0xb8f011a0,0x10fa3d98,0xfd2183b8,0x4afcb56c,0x2dd1d35b,
+       0x9a53e479,0xb6f84565,0xd28e49bc,0x4bfb9790,0xe1ddf2da,0xa4cb7e33,0x62fb1341,0xcee4c6e8,
+       0xef20cada,0x36774c01,0xd07e9efe,0x2bf11fb4,0x95dbda4d,0xae909198,0xeaad8e71,0x6b93d5a0,
+       0xd08ed1d0,0xafc725e0,0x8e3c5b2f,0x8e7594b7,0x8ff6e2fb,0xf2122b64,0x8888b812,0x900df01c,
+       0x4fad5ea0,0x688fc31c,0xd1cff191,0xb3a8c1ad,0x2f2f2218,0xbe0e1777,0xea752dfe,0x8b021fa1,
+       0xe5a0cc0f,0xb56f74e8,0x18acf3d6,0xce89e299,0xb4a84fe0,0xfd13e0b7,0x7cc43b81,0xd2ada8d9,
+       0x165fa266,0x80957705,0x93cc7314,0x211a1477,0xe6ad2065,0x77b5fa86,0xc75442f5,0xfb9d35cf,
+       0xebcdaf0c,0x7b3e89a0,0xd6411bd3,0xae1e7e49,0x00250e2d,0x2071b35e,0x226800bb,0x57b8e0af,
+       0x2464369b,0xf009b91e,0x5563911d,0x59dfa6aa,0x78c14389,0xd95a537f,0x207d5ba2,0x02e5b9c5,
+       0x83260376,0x6295cfa9,0x11c81968,0x4e734a41,0xb3472dca,0x7b14a94a,0x1b510052,0x9a532915,
+       0xd60f573f,0xbc9bc6e4,0x2b60a476,0x81e67400,0x08ba6fb5,0x571be91f,0xf296ec6b,0x2a0dd915,
+       0xb6636521,0xe7b9f9b6,0xff34052e,0xc5855664,0x53b02d5d,0xa99f8fa1,0x08ba4799,0x6e85076a],
+      // S1
+      [0x4b7a70e9,0xb5b32944,0xdb75092e,0xc4192623,0xad6ea6b0,0x49a7df7d,0x9cee60b8,0x8fedb266,
+       0xecaa8c71,0x699a17ff,0x5664526c,0xc2b19ee1,0x193602a5,0x75094c29,0xa0591340,0xe4183a3e,
+       0x3f54989a,0x5b429d65,0x6b8fe4d6,0x99f73fd6,0xa1d29c07,0xefe830f5,0x4d2d38e6,0xf0255dc1,
+       0x4cdd2086,0x8470eb26,0x6382e9c6,0x021ecc5e,0x09686b3f,0x3ebaefc9,0x3c971814,0x6b6a70a1,
+       0x687f3584,0x52a0e286,0xb79c5305,0xaa500737,0x3e07841c,0x7fdeae5c,0x8e7d44ec,0x5716f2b8,
+       0xb03ada37,0xf0500c0d,0xf01c1f04,0x0200b3ff,0xae0cf51a,0x3cb574b2,0x25837a58,0xdc0921bd,
+       0xd19113f9,0x7ca92ff6,0x94324773,0x22f54701,0x3ae5e581,0x37c2dadc,0xc8b57634,0x9af3dda7,
+       0xa9446146,0x0fd0030e,0xecc8c73e,0xa4751e41,0xe238cd99,0x3bea0e2f,0x3280bba1,0x183eb331,
+       0x4e548b38,0x4f6db908,0x6f420d03,0xf60a04bf,0x2cb81290,0x24977c79,0x5679b072,0xbcaf89af,
+       0xde9a771f,0xd9930810,0xb38bae12,0xdccf3f2e,0x5512721f,0x2e6b7124,0x501adde6,0x9f84cd87,
+       0x7a584718,0x7408da17,0xbc9f9abc,0xe94b7d8c,0xec7aec3a,0xdb851dfa,0x63094366,0xc464c3d2,
+       0xef1c1847,0x3215d908,0xdd433b37,0x24c2ba16,0x12a14d43,0x2a65c451,0x50940002,0x133ae4dd,
+       0x71dff89e,0x10314e55,0x81ac77d6,0x5f11199b,0x043556f1,0xd7a3c76b,0x3c11183b,0x5924a509,
+       0xf28fe6ed,0x97f1fbfa,0x9ebabf2c,0x1e153c6e,0x86e34570,0xeae96fb1,0x860e5e0a,0x5a3e2ab3,
+       0x771fe71c,0x4e3d06fa,0x2965dcb9,0x99e71d0f,0x803e89d6,0x5266c825,0x2e4cc978,0x9c10b36a,
+       0xc6150eba,0x94e2ea78,0xa5fc3c53,0x1e0a2df4,0xf2f74ea7,0x361d2b3d,0x1939260f,0x19c27960,
+       0x5223a708,0xf71312b6,0xebadfe6e,0xeac31f66,0xe3bc4595,0xa67bc883,0xb17f37d1,0x018cff28,
+       0xc332ddef,0xbe6c5aa5,0x65582185,0x68ab9802,0xeecea50f,0xdb2f953b,0x2aef7dad,0x5b6e2f84,
+       0x1521b628,0x29076170,0xecdd4775,0x619f1510,0x13cca830,0xeb61bd96,0x0334fe1e,0xaa0363cf,
+       0xb5735c90,0x4c70a239,0xd59e9e0b,0xcbaade14,0xeecc86bc,0x60622ca7,0x9cab5cab,0xb2f3846e,
+       0x648b1eaf,0x19bdf0ca,0xa02369b9,0x655abb50,0x40685a32,0x3c2ab4b3,0x319ee9d5,0xc021b8f7,
+       0x9b540b19,0x875fa099,0x95f7997e,0x623d7da8,0xf837889a,0x97e32d77,0x11ed935f,0x16681281,
+       0x0e358829,0xc7e61fd6,0x96dedfa1,0x7858ba99,0x57f584a5,0x1b227263,0x9b83c3ff,0x1ac24696,
+       0xcdb30aeb,0x532e3054,0x8fd948e4,0x6dbc3128,0x58ebf2ef,0x34c6ffea,0xfe28ed61,0xee7c3c73,
+       0x5d4a14d9,0xe864b7e3,0x42105d14,0x203e13e0,0x45eee2b6,0xa3aaabea,0xdb6c4f15,0xfacb4fd0,
+       0xc742f442,0xef6abbb5,0x654f3b1d,0x41cd2105,0xd81e799e,0x86854dc7,0xe44b476a,0x3d816250,
+       0xcf62a1f2,0x5b8d2646,0xfc8883a0,0xc1c7b6a3,0x7f1524c3,0x69cb7492,0x47848a0b,0x5692b285,
+       0x095bbf00,0xad19489d,0x1462b174,0x23820e00,0x58428d2a,0x0c55f5ea,0x1dadf43e,0x233f7061,
+       0x3372f092,0x8d937e41,0xd65fecf1,0x6c223bdb,0x7cde3759,0xcbee7460,0x4085f2a7,0xce77326e,
+       0xa6078084,0x19f8509e,0xe8efd855,0x61d99735,0xa969a7aa,0xc50c06c2,0x5a04abfc,0x800bcadc,
+       0x9e447a2e,0xc3453484,0xfdd56705,0x0e1e9ec9,0xdb73dbd3,0x105588cd,0x675fda79,0xe3674340,
+       0xc5c43465,0x713e38d8,0x3d28f89e,0xf16dff20,0x153e21e7,0x8fb03d4a,0xe6e39f2b,0xdb83adf7],
+      // S2
+      [0xe93d5a68,0x948140f7,0xf64c261c,0x94692934,0x411520f7,0x7602d4f7,0xbcf46b2e,0xd4a20068,
+       0xd4082471,0x3320f46a,0x43b7d4b7,0x500061af,0x1e39f62e,0x97244546,0x14214f74,0xbf8b8840,
+       0x4d95fc1d,0x96b591af,0x70f4ddd3,0x66a02f45,0xbfbc09ec,0x03bd9785,0x7fac6dd0,0x31cb8504,
+       0x96eb27b3,0x55fd3941,0xda2547e6,0xabca0a9a,0x28507825,0x530429f4,0x0a2c86da,0xe9b66dfb,
+       0x68dc1462,0xd7486900,0x680ec0a4,0x27a18dee,0x4f3ffea2,0xe887ad8c,0xb58ce006,0x7af4d6b6,
+       0xaace1e7c,0xd3375fec,0xce78a399,0x406b2a42,0x20fe9e35,0xd9f385b9,0xee39d7ab,0x3b124e8b,
+       0x1dc9faf7,0x4b6d1856,0x26a36631,0xeae397b2,0x3a6efa74,0xdd5b4332,0x6841e7f7,0xca7820fb,
+       0xfb0af54e,0xd8feb397,0x454056ac,0xba489527,0x55533a3a,0x20838d87,0xfe6ba9b7,0xd096954b,
+       0x55a867bc,0xa1159a58,0xcca92963,0x99e1db33,0xa62a4a56,0x3f3125f9,0x5ef47e1c,0x9029317c,
+       0xfdf8e802,0x04272f70,0x80bb155c,0x05282ce3,0x95c11548,0xe4c66d22,0x48c1133f,0xc70f86dc,
+       0x07f9c9ee,0x41041f0f,0x404779a4,0x5d886e17,0x325f51eb,0xd59bc0d1,0xf2bcc18f,0x41113564,
+       0x257b7834,0x602a9c60,0xdff8e8a3,0x1f636c1b,0x0e12b4c2,0x02e1329e,0xaf664fd1,0xcad18115,
+       0x6b2395e0,0x333e92e1,0x3b240b62,0xeebeb922,0x85b2a20e,0xe6ba0d99,0xde720c8c,0x2da2f728,
+       0xd0127845,0x95b794fd,0x647d0862,0xe7ccf5f0,0x5449a36f,0x877d48fa,0xc39dfd27,0xf33e8d1e,
+       0x0a476341,0x992eff74,0x3a6f6eab,0xf4f8fd37,0xa812dc60,0xa1ebddf8,0x991be14c,0xdb6e6b0d,
+       0xc67b5510,0x6d672c37,0x2765d43b,0xdcd0e804,0xf1290dc7,0xcc00ffa3,0xb5390f92,0x690fed0b,
+       0x667b9ffb,0xcedb7d9c,0xa091cf0b,0xd9155ea3,0xbb132f88,0x515bad24,0x7b9479bf,0x763bd6eb,
+       0x37392eb3,0xcc115979,0x8026e297,0xf42e312d,0x6842ada7,0xc66a2b3b,0x12754ccc,0x782ef11c,
+       0x6a124237,0xb79251e7,0x06a1bbe6,0x4bfb6350,0x1a6b1018,0x11caedfa,0x3d25bdd8,0xe2e1c3c9,
+       0x44421659,0x0a121386,0xd90cec6e,0xd5abea2a,0x64af674e,0xda86a85f,0xbebfe988,0x64e4c3fe,
+       0x9dbc8057,0xf0f7c086,0x60787bf8,0x6003604d,0xd1fd8346,0xf6381fb0,0x7745ae04,0xd736fccc,
+       0x83426b33,0xf01eab71,0xb0804187,0x3c005e5f,0x77a057be,0xbde8ae24,0x55464299,0xbf582e61,
+       0x4e58f48f,0xf2ddfda2,0xf474ef38,0x8789bdc2,0x5366f9c3,0xc8b38e74,0xb475f255,0x46fcd9b9,
+       0x7aeb2661,0x8b1ddf84,0x846a0e79,0x915f95e2,0x466e598e,0x20b45770,0x8cd55591,0xc902de4c,
+       0xb90bace1,0xbb8205d0,0x11a86248,0x7574a99e,0xb77f19b6,0xe0a9dc09,0x662d09a1,0xc4324633,
+       0xe85a1f02,0x09f0be8c,0x4a99a025,0x1d6efe10,0x1ab93d1d,0x0ba5a4df,0xa186f20f,0x2868f169,
+       0xdcb7da83,0x573906fe,0xa1e2ce9b,0x4fcd7f52,0x50115e01,0xa70683fa,0xa002b5c4,0x0de6d027,
+       0x9af88c27,0x773f8641,0xc3604c06,0x61a806b5,0xf0177a28,0xc0f586e0,0x006058aa,0x30dc7d62,
+       0x11e69ed7,0x2338ea63,0x53c2dd94,0xc2c21634,0xbbcbee56,0x90bcb6de,0xebfc7da1,0xce591d76,
+       0x6f05e409,0x4b7c0188,0x39720a3d,0x7c927c24,0x86e3725f,0x724d9db9,0x1ac15bb4,0xd39eb8fc,
+       0xed545578,0x08fca5b5,0xd83d7cd3,0x4dad0fc4,0x1e50ef5e,0xb161e6f8,0xa28514d9,0x6c51133c,
+       0x6fd5c7e7,0x56e14ec4,0x362abfce,0xddc6c837,0xd79a3234,0x92638212,0x670efa8e,0x406000e0],
+      // S3
+      [0x3a39ce37,0xd3faf5cf,0xabc27737,0x5ac52d1b,0x5cb0679e,0x4fa33742,0xd3822740,0x99bc9bbe,
+       0xd5118e9d,0xbf0f7315,0xd62d1c7e,0xc700c47b,0xb78c1b6b,0x21a19045,0xb26eb1be,0x6a366eb4,
+       0x5748ab2f,0xbc946e79,0xc6a376d2,0x6549c2c8,0x530ff8ee,0x468dde7d,0xd5730a1d,0x4cd04dc6,
+       0x2939bbdb,0xa9ba4650,0xac9526e8,0xbe5ee304,0xa1fad5f0,0x6a2d519a,0x63ef8ce2,0x9a86ee22,
+       0xc089c2b8,0x43242ef6,0xa51e03aa,0x9cf2d0a4,0x83c061ba,0x9be96a4d,0x8fe51550,0xba645bd6,
+       0x2826a2f9,0xa73a3ae1,0x4ba99586,0xef5562e9,0xc72fefd3,0xf752f7da,0x3f046f69,0x77fa0a59,
+       0x80e4a915,0x87b08601,0x9b09e6ad,0x3b3ee593,0xe990fd5a,0x9e34d797,0x2cf0b7d9,0x022b8b51,
+       0x96d5ac3a,0x017da67d,0xd1cf3ed6,0x7c7d2d28,0x1f9f25cf,0xadf2b89b,0x5ad6b472,0x5a88f54c,
+       0xe029ac71,0xe019a5e6,0x47b0acfd,0xed93fa9b,0xe8d3c48d,0x283b57cc,0xf8d56629,0x79132e28,
+       0x785f0191,0xed756055,0xf7960e44,0xe3d35e8c,0x15056dd4,0x88f46dba,0x03a16125,0x0564f0bd,
+       0xc3eb9e15,0x3c9057a2,0x97271aec,0xa93a072a,0x1b3f6d9b,0x1e6321f5,0xf59c66fb,0x26dcf319,
+       0x7533d928,0xb155fdf5,0x03563482,0x8aba3cbb,0x28517711,0xc20ad9f8,0xabcc5167,0xccad925f,
+       0x4de81751,0x3830dc8e,0x379d5862,0x9320f991,0xea7a90c2,0xfb3e7bce,0x5121ce64,0x774fbe32,
+       0xa8b6e37e,0xc3293d46,0x48de5369,0x6413e680,0xa2ae0810,0xdd6db224,0x69852dfd,0x09072166,
+       0xb39a460a,0x6445c0dd,0x586cdecf,0x1c20c8ae,0x5bbef7dd,0x1b588d40,0xccd2017f,0x6bb4e3bb,
+       0xdda26a7e,0x3a59ff45,0x3e350a44,0xbcb4cdd5,0x72eacea8,0xfa6484bb,0x8d6612ae,0xbf3c6f47,
+       0xd29be463,0x542f5d9e,0xaec2771b,0xf64e6370,0x740e0d8d,0xe75b1357,0xf8721671,0xaf537d5d,
+       0x4040cb08,0x4eb4e2cc,0x34d2466a,0x0115af84,0xe1b00428,0x95983a1d,0x06b89fb4,0xce6ea048,
+       0x6f3f3b82,0x3520ab82,0x011a1d4b,0x277227f8,0x611560b1,0xe7933fdc,0xbb3a792b,0x344525bd,
+       0xa08839e1,0x51ce794b,0x2f32c9b7,0xa01fbac9,0xe01cc87e,0xbcc7d1f6,0xcf0111c3,0xa1e8aac7,
+       0x1a908749,0xd44fbd9a,0xd0dadecb,0xd50ada38,0x0339c32a,0xc6913667,0x8df9317c,0xe0b12b4f,
+       0xf79e59b7,0x43f5bb3a,0xf2d519ff,0x27d9459c,0xbf97222c,0x15e6fc2a,0x0f91fc71,0x9b941525,
+       0xfae59361,0xceb69ceb,0xc2a86459,0x12baa8d1,0xb6c1075e,0xe3056a0c,0x10d25065,0xcb03a442,
+       0xe0ec6e0e,0x1698db3b,0x4c98a0be,0x3278e964,0x9f1f9532,0xe0d392df,0xd3a0342b,0x8971f21e,
+       0x1b0a7441,0x4ba3348c,0xc5be7120,0xc37632d8,0xdf359f8d,0x9b992f2e,0xe60b6f47,0x0fe3f11d,
+       0xe54cda54,0x1edad891,0xce6279cf,0xcd3e7e6f,0x1618b166,0xfd2c1d05,0x848fd2c5,0xf6fb2299,
+       0xf523f357,0xa6327623,0x93a83531,0x56cccd02,0xacf08162,0x5a75ebb5,0x6e163697,0x88d273cc,
+       0xde966292,0x81b949d0,0x4c50901b,0x71c65614,0xe6c6c7bd,0x327a140a,0x45e1d006,0xc3f27b9a,
+       0xc9aa53fd,0x62a80f00,0xbb25bfe2,0x35bdd2f6,0x71126905,0xb2040222,0xb6cbcf7c,0xcd769c2b,
+       0x53113ec0,0x1640e3d3,0x38abbd60,0x2547adf0,0xba38209c,0xf746ce76,0x77afa1c5,0x20756060,
+       0x85cbfe4e,0x8ae88dd8,0x7aaaf9b0,0x4cf9aa7e,0x1948c25c,0x02fb8a8c,0x01c36ae4,0xd6ebe1f9,
+       0x90d4f869,0xa65cdea0,0x3f09252d,0xc208e69f,0xb74e6132,0xce77e25b,0x578fdfe3,0x3ac372e6]
+    ];
+
+    function streamtoword(data, offsetRef) {
+      let word = 0;
+      for (let i = 0; i < 4; i++) {
+        word = (word << 8) | (data[offsetRef.off] & 0xff);
+        offsetRef.off = (offsetRef.off + 1) % data.length;
+      }
+      return word >>> 0;
+    }
+    function encipher(P, S, lr) {
+      let l = lr[0] >>> 0, r = lr[1] >>> 0;
+      l = (l ^ P[0]) >>> 0;
+      for (let i = 1; i <= 16; i += 2) {
+        const f1 = (((S[0][(l >>> 24) & 0xff] + S[1][(l >>> 16) & 0xff]) ^ S[2][(l >>> 8) & 0xff]) + S[3][l & 0xff]) >>> 0;
+        r = (r ^ f1 ^ P[i]) >>> 0;
+        const f2 = (((S[0][(r >>> 24) & 0xff] + S[1][(r >>> 16) & 0xff]) ^ S[2][(r >>> 8) & 0xff]) + S[3][r & 0xff]) >>> 0;
+        l = (l ^ f2 ^ P[i + 1]) >>> 0;
+      }
+      lr[0] = (r ^ P[17]) >>> 0;
+      lr[1] = l;
+    }
+    function eksKey(P, S, salt, key) {
+      const offsetK = { off: 0 }, offsetS = { off: 0 };
+      const lr = [0, 0];
+      for (let i = 0; i < 18; i++) P[i] = (P[i] ^ streamtoword(key, offsetK)) >>> 0;
+      for (let i = 0; i < 18; i += 2) {
+        lr[0] = (lr[0] ^ streamtoword(salt, offsetS)) >>> 0;
+        lr[1] = (lr[1] ^ streamtoword(salt, offsetS)) >>> 0;
+        encipher(P, S, lr);
+        P[i] = lr[0]; P[i + 1] = lr[1];
+      }
+      for (let s = 0; s < 4; s++) {
+        for (let i = 0; i < 256; i += 2) {
+          lr[0] = (lr[0] ^ streamtoword(salt, offsetS)) >>> 0;
+          lr[1] = (lr[1] ^ streamtoword(salt, offsetS)) >>> 0;
+          encipher(P, S, lr);
+          S[s][i] = lr[0]; S[s][i + 1] = lr[1];
+        }
+      }
+    }
+    function key(P, S, key) {
+      const offsetK = { off: 0 };
+      const lr = [0, 0];
+      for (let i = 0; i < 18; i++) P[i] = (P[i] ^ streamtoword(key, offsetK)) >>> 0;
+      for (let i = 0; i < 18; i += 2) {
+        encipher(P, S, lr);
+        P[i] = lr[0]; P[i + 1] = lr[1];
+      }
+      for (let s = 0; s < 4; s++) {
+        for (let i = 0; i < 256; i += 2) {
+          encipher(P, S, lr);
+          S[s][i] = lr[0]; S[s][i + 1] = lr[1];
+        }
+      }
+    }
+    function cryptRaw(passwordBytes, saltBytes, logRounds) {
+      const P = P_orig.slice();
+      const S = [S_orig[0].slice(), S_orig[1].slice(), S_orig[2].slice(), S_orig[3].slice()];
+      eksKey(P, S, saltBytes, passwordBytes);
+      const rounds = 1 << logRounds;
+      for (let i = 0; i < rounds; i++) {
+        key(P, S, passwordBytes);
+        key(P, S, saltBytes);
+      }
+      // 6 × 64-bit blocks of "OrpheanBeholderScryDoubt"
+      const cdata = [
+        0x4f727068, 0x65616e42, 0x65686f6c, 0x64657253, 0x63727944, 0x6f756274
+      ];
+      for (let i = 0; i < 64; i++) {
+        for (let j = 0; j < 3; j++) {
+          const lr = [cdata[j * 2], cdata[j * 2 + 1]];
+          encipher(P, S, lr);
+          cdata[j * 2] = lr[0]; cdata[j * 2 + 1] = lr[1];
+        }
+      }
+      const out = new Uint8Array(24);
+      for (let i = 0; i < 6; i++) {
+        out[i * 4]     = (cdata[i] >>> 24) & 0xff;
+        out[i * 4 + 1] = (cdata[i] >>> 16) & 0xff;
+        out[i * 4 + 2] = (cdata[i] >>> 8) & 0xff;
+        out[i * 4 + 3] = cdata[i] & 0xff;
+      }
+      return out;
+    }
+
+    function hashpw(password, logRounds = 10, prefix = '2y') {
+      // password bytes: UTF-8 + trailing 0x00, capped at 72 bytes per spec
+      let pwBytes = enc.encode(password + '\0');
+      if (pwBytes.length > 72) pwBytes = pwBytes.subarray(0, 72);
+      // 16-byte random salt
+      const salt = new Uint8Array(BCRYPT_SALT_LEN);
+      crypto.getRandomValues(salt);
+      const out = cryptRaw(pwBytes, salt, logRounds);
+      const cost = String(logRounds).padStart(2, '0');
+      return `$${prefix}$${cost}$${encodeBase64(salt, BCRYPT_SALT_LEN)}${encodeBase64(out, 23)}`;
+    }
+
+    return { hashpw };
+  })();
+
+  // ===== phpass (portable hash, $P$) =====
+  // Reference: phpass by Solar Designer. 8-byte salt + 2^N rounds of MD5.
+  const phpass = (() => {
+    const ITOA64 = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+
+    // MD5 returning a Uint8Array (16 bytes), built from our hex md5
+    function md5Bytes(input /* Uint8Array */) {
+      // We need MD5 over arbitrary bytes. Convert to a Latin-1 string and reuse md5().
+      // But our md5() takes a string and UTF-8 encodes it. So we need a byte version.
+      // Simpler: write a small variant that takes Uint8Array.
+      const len = input.length;
+      const totalLen = (((len + 8) >>> 6) + 1) * 64;
+      const buf = new Uint8Array(totalLen);
+      buf.set(input);
+      buf[len] = 0x80;
+      const bitLen = len * 8;
+      buf[totalLen - 8] = bitLen & 0xff;
+      buf[totalLen - 7] = (bitLen >>> 8) & 0xff;
+      buf[totalLen - 6] = (bitLen >>> 16) & 0xff;
+      buf[totalLen - 5] = (bitLen >>> 24) & 0xff;
+      let a = 0x67452301, b = 0xefcdab89, c = 0x98badcfe, d = 0x10325476;
+      const K = [
+        0xd76aa478,0xe8c7b756,0x242070db,0xc1bdceee, 0xf57c0faf,0x4787c62a,0xa8304613,0xfd469501,
+        0x698098d8,0x8b44f7af,0xffff5bb1,0x895cd7be, 0x6b901122,0xfd987193,0xa679438e,0x49b40821,
+        0xf61e2562,0xc040b340,0x265e5a51,0xe9b6c7aa, 0xd62f105d,0x02441453,0xd8a1e681,0xe7d3fbc8,
+        0x21e1cde6,0xc33707d6,0xf4d50d87,0x455a14ed, 0xa9e3e905,0xfcefa3f8,0x676f02d9,0x8d2a4c8a,
+        0xfffa3942,0x8771f681,0x6d9d6122,0xfde5380c, 0xa4beea44,0x4bdecfa9,0xf6bb4b60,0xbebfbc70,
+        0x289b7ec6,0xeaa127fa,0xd4ef3085,0x04881d05, 0xd9d4d039,0xe6db99e5,0x1fa27cf8,0xc4ac5665,
+        0xf4292244,0x432aff97,0xab9423a7,0xfc93a039, 0x655b59c3,0x8f0ccc92,0xffeff47d,0x85845dd1,
+        0x6fa87e4f,0xfe2ce6e0,0xa3014314,0x4e0811a1, 0xf7537e82,0xbd3af235,0x2ad7d2bb,0xeb86d391
+      ];
+      const S = [7,12,17,22,7,12,17,22,7,12,17,22,7,12,17,22,5,9,14,20,5,9,14,20,5,9,14,20,5,9,14,20,4,11,16,23,4,11,16,23,4,11,16,23,4,11,16,23,6,10,15,21,6,10,15,21,6,10,15,21,6,10,15,21];
+      const rotl = (x, n) => ((x << n) | (x >>> (32 - n))) >>> 0;
+      const add32 = (x, y) => ((x + y) & 0xffffffff) >>> 0;
+      for (let off = 0; off < totalLen; off += 64) {
+        const M = new Array(16);
+        for (let i = 0; i < 16; i++) {
+          const j = off + i * 4;
+          M[i] = ((buf[j]) | (buf[j+1] << 8) | (buf[j+2] << 16) | (buf[j+3] << 24)) >>> 0;
+        }
+        let A = a, B = b, C = c, D = d;
+        for (let i = 0; i < 64; i++) {
+          let F, g;
+          if (i < 16)      { F = (B & C) | ((~B) & D); g = i; }
+          else if (i < 32) { F = (D & B) | ((~D) & C); g = (5 * i + 1) % 16; }
+          else if (i < 48) { F = B ^ C ^ D;            g = (3 * i + 5) % 16; }
+          else             { F = C ^ (B | (~D));      g = (7 * i)     % 16; }
+          F = (F + A + K[i] + M[g]) >>> 0;
+          A = D; D = C; C = B;
+          B = add32(B, rotl(F, S[i]));
+        }
+        a = add32(a, A); b = add32(b, B); c = add32(c, C); d = add32(d, D);
+      }
+      const out = new Uint8Array(16);
+      [a, b, c, d].forEach((v, i) => {
+        out[i * 4]     = v & 0xff;
+        out[i * 4 + 1] = (v >>> 8) & 0xff;
+        out[i * 4 + 2] = (v >>> 16) & 0xff;
+        out[i * 4 + 3] = (v >>> 24) & 0xff;
+      });
+      return out;
+    }
+
+    function encode64(input, count) {
+      let output = '';
+      let i = 0;
+      while (i < count) {
+        let value = input[i++];
+        output += ITOA64[value & 0x3f];
+        if (i < count) value |= input[i] << 8;
+        output += ITOA64[(value >> 6) & 0x3f];
+        if (i++ >= count) break;
+        if (i < count) value |= input[i] << 16;
+        output += ITOA64[(value >> 12) & 0x3f];
+        if (i++ >= count) break;
+        output += ITOA64[(value >> 18) & 0x3f];
+      }
+      return output;
+    }
+
+    function hashpw(password, logRounds = 13) {
+      // logRounds 7..30; phpass standard for WP is 8 historically, but allow 8..13
+      const iterChar = ITOA64[Math.min(30, Math.max(7, logRounds))];
+      const saltBytes = new Uint8Array(6);
+      crypto.getRandomValues(saltBytes);
+      const salt8 = encode64(saltBytes, 6).slice(0, 8);
+      const setting = '$P$' + iterChar + salt8;
+      const pw = enc.encode(password);
+      const saltStr = enc.encode(salt8);
+
+      // hash = md5(salt + pw); then iterate 2^logRounds times: hash = md5(hash + pw)
+      const cat = (a, b) => { const out = new Uint8Array(a.length + b.length); out.set(a); out.set(b, a.length); return out; };
+      let hash = md5Bytes(cat(saltStr, pw));
+      const rounds = 1 << Math.min(30, Math.max(7, logRounds));
+      for (let i = 0; i < rounds; i++) {
+        hash = md5Bytes(cat(hash, pw));
+      }
+      return setting + encode64(hash, 16);
+    }
+    return { hashpw };
+  })();
+
+  /* -------------------------------------------------------------
+     8. bcrypt / phpass tab wiring
+     ------------------------------------------------------------- */
+  function setBusy(btn, busy, label = 'Generating...') {
+    btn._origText = btn._origText || btn.textContent;
+    btn.disabled = busy;
+    btn.textContent = busy ? label : btn._origText;
+  }
+  $('bc-algo').addEventListener('change', () => {
+    $('bc-algo-label').textContent = $('bc-algo').value;
+  });
+  $('bc-generate').addEventListener('click', () => {
+    const pw = $('bc-input').value;
+    if (!pw) { setOutput('bc-output', '// hash output appears here', true); return; }
+    const algo = $('bc-algo').value;
+    const cost = parseInt($('bc-cost').value, 10);
+    const btn = $('bc-generate');
+    setBusy(btn, true);
+    // yield to UI then hash
+    setTimeout(() => {
+      try {
+        const t0 = performance.now();
+        const hash = algo === 'bcrypt'
+          ? bcrypt.hashpw(pw, cost, '2y')
+          : phpass.hashpw(pw, Math.min(13, cost + 3)); // map bcrypt cost to phpass rounds roughly
+        const dt = (performance.now() - t0).toFixed(0);
+        setOutput('bc-output', `${hash}\n\n// generated in ${dt}ms · ${algo}`);
+      } catch (e) {
+        setOutput('bc-output', '// error: ' + (e.message || String(e)));
+      } finally {
+        setBusy(btn, false);
+      }
+    }, 30);
+  });
+  $('bc-clear').addEventListener('click', () => {
+    $('bc-input').value = '';
+    setOutput('bc-output', '// hash output appears here', true);
+  });
+
+  /* -------------------------------------------------------------
+     9. Password generator
+     ------------------------------------------------------------- */
+  // a small word list for memorable mode (EFF-style short list, trimmed for size)
+  const WORD_LIST = ('able acid aged also area army away baby back ball band bank base bath bear beat been bell belt best bike bird blow blue boat body bone book boot born boss both bowl bulk burn bush busy cake call calm came camp card care case cash cast cell chat chip city club coal coat code cold come cook cool cope copy core corn cost crew crop dark data date dawn days dead deal dean dear debt deep deny desk dial dice diet disc disk does done door dose down draw drew drop drug drum dual duke dust duty each earn ease east easy edge else euro even ever evil exit face fact fail fair fall farm fast fate fear feed feel feet fell felt file fill film find fine fire firm fish five flag flat flow folk food foot ford form fort four free from fuel full fund gain game gate gave gear gene gift girl give glad goal goes gold gone good gray grew grey grow gulf hair half hall hand hang hard harm hate have head hear heat held hell help here hero high hill hire hold hole holy home hope host hour huge hung hunt hurt idea inch into iron item jane jean john join jump jury just keen keep kept kick kill kind king knee knew know lack lady laid lake land lane last late lead left less life lift like line link list live load loan lock logo long look lord lose loss lost love luck made mail main make male many mark mass matt meal mean meat meet mere mike mile milk mill mind mine miss mode mood moon more most move much must name navy near neck need news next nice nick nine none nose note okay once only onto open oral over pace pack page paid pain pair palm park part pass past path peak pick pink pipe plan play plot plug plus poll pool poor port post pull pure push race rail rain rank rare rate read real rear rely rent rest rice rich ride ring rise risk road rock role roll roof room root rose rule rush ruth safe said sake sale salt same sand save seat seek seem seen self sell send sent sept ship shop shot show shut sick side sign site size skin slip slow snow soft soil sold sole some song soon sort soul spot star stay step stop such suit sure take tale talk tall tank tape task team tech tell tend term test text than that them then they thin this thus tied time tiny tone tony took tool tour town tree trip true tune turn twin type unit upon used user vary vast very vice view vote wage wait wake walk wall want ward warm wash wave ways weak wear week well went were west what when whom wide wife wild will wind wine wing wire wise wish with wood word wore work yard yeah year your zero zone').split(' ');
+
+  function secureInt(max) {
+    const buf = new Uint32Array(1);
+    const range = 0x100000000;
+    const limit = range - (range % max);
+    let r;
+    do { crypto.getRandomValues(buf); r = buf[0]; } while (r >= limit);
+    return r % max;
+  }
+
+  function makePassword({ length, style, noSimilar, safeSymbols }) {
+    if (style === 'words') {
+      const parts = [];
+      for (let i = 0; i < 4; i++) parts.push(WORD_LIST[secureInt(WORD_LIST.length)]);
+      // capitalize and join with separator + 2 random digits at the end
+      const sep = '-';
+      const cap = parts.map(p => p[0].toUpperCase() + p.slice(1));
+      const digits = String(secureInt(100)).padStart(2, '0');
+      return cap.join(sep) + sep + digits;
+    }
+    let pool = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    if (style === 'strong') {
+      pool += safeSymbols ? '!@#$%^&*-_=+?' : '!@#$%^&*()-_=+[]{};:,.<>?/~';
+    }
+    if (noSimilar) pool = pool.replace(/[1lI0Oo]/g, '');
+    let out = '';
+    for (let i = 0; i < length; i++) out += pool[secureInt(pool.length)];
+    return out;
+  }
+
+  $('pw-generate').addEventListener('click', () => {
+    const length = Math.min(128, Math.max(6, parseInt($('pw-length').value, 10) || 20));
+    const count  = Math.min(50,  Math.max(1, parseInt($('pw-count').value, 10) || 1));
+    const style  = $('pw-style').value;
+    const noSimilar = $('pw-no-similar').checked;
+    const safeSymbols = $('pw-safe-symbols').checked;
+    const lines = [];
+    for (let i = 0; i < count; i++) lines.push(makePassword({ length, style, noSimilar, safeSymbols }));
+    setOutput('pw-output', lines.join('\n'));
+  });
+  $('pw-clear').addEventListener('click', () => {
+    setOutput('pw-output', '// passwords appear here', true);
+  });
+
+  /* -------------------------------------------------------------
+    10. WordPress secret keys generator
+     ------------------------------------------------------------- */
+  function wpSaltLine(name) {
+    // 64 random printable chars, matching the format of api.wordpress.org/secret-key/1.1/salt/
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_ []{}<>~`+=,.;:/?|';
+    let s = '';
+    for (let i = 0; i < 64; i++) s += chars[secureInt(chars.length)];
+    // escape single quotes for safety inside the PHP single-quoted string
+    s = s.replace(/'/g, "\\'");
+    return `define( '${name}', '${s}' );`;
+  }
+  $('salt-generate').addEventListener('click', () => {
+    const names = ['AUTH_KEY', 'SECURE_AUTH_KEY', 'LOGGED_IN_KEY', 'NONCE_KEY',
+                   'AUTH_SALT', 'SECURE_AUTH_SALT', 'LOGGED_IN_SALT', 'NONCE_SALT'];
+    setOutput('salt-output', names.map(wpSaltLine).join('\n'));
+  });
+  $('salt-clear').addEventListener('click', () => {
+    setOutput('salt-output', '// salt block appears here', true);
+  });
+
+  /* -------------------------------------------------------------
+    11. .htpasswd
+     ------------------------------------------------------------- */
+  // APR1 (Apache MD5 crypt) implementation — pure JS
+  function apr1Crypt(password, salt) {
+    salt = salt.slice(0, 8);
+    const pw = enc.encode(password);
+    const sl = enc.encode(salt);
+    const cat = (...parts) => { const t = parts.reduce((s, p) => s + p.length, 0); const o = new Uint8Array(t); let off = 0; for (const p of parts) { o.set(p, off); off += p.length; } return o; };
+    // We need a byte-level MD5; reuse phpass's md5Bytes via closure trick:
+    // The phpass closure isn't exposed. Re-create md5Bytes inline via a small wrapper around md5() that accepts bytes.
+    const md5B = (bytes) => {
+      // convert bytes to a "Latin-1" string so md5(str) sees the same bytes after UTF-8 encoding...
+      // BUT md5() UTF-8-encodes its input, so this would corrupt high bytes. We need direct bytes.
+      // Inline a byte-level MD5 here:
+      const len = bytes.length;
+      const totalLen = (((len + 8) >>> 6) + 1) * 64;
+      const buf = new Uint8Array(totalLen);
+      buf.set(bytes);
+      buf[len] = 0x80;
+      const bitLen = len * 8;
+      buf[totalLen - 8] = bitLen & 0xff;
+      buf[totalLen - 7] = (bitLen >>> 8) & 0xff;
+      buf[totalLen - 6] = (bitLen >>> 16) & 0xff;
+      buf[totalLen - 5] = (bitLen >>> 24) & 0xff;
+      let a = 0x67452301, b = 0xefcdab89, c = 0x98badcfe, d = 0x10325476;
+      const K = [0xd76aa478,0xe8c7b756,0x242070db,0xc1bdceee,0xf57c0faf,0x4787c62a,0xa8304613,0xfd469501,0x698098d8,0x8b44f7af,0xffff5bb1,0x895cd7be,0x6b901122,0xfd987193,0xa679438e,0x49b40821,0xf61e2562,0xc040b340,0x265e5a51,0xe9b6c7aa,0xd62f105d,0x02441453,0xd8a1e681,0xe7d3fbc8,0x21e1cde6,0xc33707d6,0xf4d50d87,0x455a14ed,0xa9e3e905,0xfcefa3f8,0x676f02d9,0x8d2a4c8a,0xfffa3942,0x8771f681,0x6d9d6122,0xfde5380c,0xa4beea44,0x4bdecfa9,0xf6bb4b60,0xbebfbc70,0x289b7ec6,0xeaa127fa,0xd4ef3085,0x04881d05,0xd9d4d039,0xe6db99e5,0x1fa27cf8,0xc4ac5665,0xf4292244,0x432aff97,0xab9423a7,0xfc93a039,0x655b59c3,0x8f0ccc92,0xffeff47d,0x85845dd1,0x6fa87e4f,0xfe2ce6e0,0xa3014314,0x4e0811a1,0xf7537e82,0xbd3af235,0x2ad7d2bb,0xeb86d391];
+      const S = [7,12,17,22,7,12,17,22,7,12,17,22,7,12,17,22,5,9,14,20,5,9,14,20,5,9,14,20,5,9,14,20,4,11,16,23,4,11,16,23,4,11,16,23,4,11,16,23,6,10,15,21,6,10,15,21,6,10,15,21,6,10,15,21];
+      const rotl = (x, n) => ((x << n) | (x >>> (32 - n))) >>> 0;
+      const add32 = (x, y) => ((x + y) & 0xffffffff) >>> 0;
+      for (let off = 0; off < totalLen; off += 64) {
+        const M = new Array(16);
+        for (let i = 0; i < 16; i++) {
+          const j = off + i * 4;
+          M[i] = ((buf[j]) | (buf[j+1] << 8) | (buf[j+2] << 16) | (buf[j+3] << 24)) >>> 0;
+        }
+        let A = a, B = b, C = c, D = d;
+        for (let i = 0; i < 64; i++) {
+          let F, g;
+          if (i < 16)      { F = (B & C) | ((~B) & D); g = i; }
+          else if (i < 32) { F = (D & B) | ((~D) & C); g = (5 * i + 1) % 16; }
+          else if (i < 48) { F = B ^ C ^ D;            g = (3 * i + 5) % 16; }
+          else             { F = C ^ (B | (~D));      g = (7 * i)     % 16; }
+          F = (F + A + K[i] + M[g]) >>> 0;
+          A = D; D = C; C = B;
+          B = add32(B, rotl(F, S[i]));
+        }
+        a = add32(a, A); b = add32(b, B); c = add32(c, C); d = add32(d, D);
+      }
+      const out = new Uint8Array(16);
+      [a, b, c, d].forEach((v, i) => {
+        out[i*4]     = v & 0xff;
+        out[i*4 + 1] = (v >>> 8) & 0xff;
+        out[i*4 + 2] = (v >>> 16) & 0xff;
+        out[i*4 + 3] = (v >>> 24) & 0xff;
+      });
+      return out;
+    };
+
+    // Per APR1: ctx = pw + "$apr1$" + salt + alt_sum truncations
+    const magic = enc.encode('$apr1$');
+    let ctx = cat(pw, magic, sl);
+    let altSum = md5B(cat(pw, sl, pw));
+    // Add altSum bytes for length of pw
+    for (let i = pw.length; i > 0; i -= 16) {
+      ctx = cat(ctx, altSum.subarray(0, Math.min(16, i)));
+    }
+    // Then for each bit of pw.length, append either 0x00 or first byte of pw
+    for (let i = pw.length; i > 0; i >>= 1) {
+      ctx = cat(ctx, (i & 1) ? new Uint8Array([0]) : pw.subarray(0, 1));
+    }
+    let final = md5B(ctx);
+    // 1000 rounds
+    for (let i = 0; i < 1000; i++) {
+      let c2 = (i & 1) ? pw : final;
+      if (i % 3) c2 = cat(c2, sl);
+      if (i % 7) c2 = cat(c2, pw);
+      c2 = cat(c2, (i & 1) ? final : pw);
+      final = md5B(c2);
+    }
+    // Custom base64 of final, 16 bytes -> 22 chars (APR1 ordering)
+    const ITOA = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    const to64 = (v, n) => { let s = ''; while (n--) { s += ITOA[v & 0x3f]; v >>= 6; } return s; };
+    let out = '';
+    out += to64((final[0] << 16) | (final[6] << 8) | final[12], 4);
+    out += to64((final[1] << 16) | (final[7] << 8) | final[13], 4);
+    out += to64((final[2] << 16) | (final[8] << 8) | final[14], 4);
+    out += to64((final[3] << 16) | (final[9] << 8) | final[15], 4);
+    out += to64((final[4] << 16) | (final[10] << 8) | final[5], 4);
+    out += to64(final[11], 2);
+    return `$apr1$${salt}$${out}`;
+  }
+
+  function randomSalt(len, alphabet) {
+    let s = '';
+    for (let i = 0; i < len; i++) s += alphabet[secureInt(alphabet.length)];
+    return s;
+  }
+
+  $('ht-generate').addEventListener('click', async () => {
+    const user = $('ht-user').value.trim();
+    const pass = $('ht-pass').value;
+    if (!user || !pass) { setOutput('ht-output', '// fill both username and password', true); return; }
+    if (user.includes(':')) { setOutput('ht-output', '// username cannot contain a colon (:)', true); return; }
+    const algo = $('ht-algo').value;
+    const btn = $('ht-generate');
+    setBusy(btn, true);
+    setTimeout(async () => {
+      try {
+        let hash;
+        if (algo === 'bcrypt') {
+          hash = bcrypt.hashpw(pass, 10, '2y');
+        } else if (algo === 'apr1') {
+          const salt = randomSalt(8, './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz');
+          hash = apr1Crypt(pass, salt);
+        } else {
+          // {SHA} = "{SHA}" + base64(sha1(pw))
+          const buf = await crypto.subtle.digest('SHA-1', enc.encode(pass));
+          let bin = '';
+          new Uint8Array(buf).forEach(b => bin += String.fromCharCode(b));
+          hash = '{SHA}' + btoa(bin);
+        }
+        setOutput('ht-output', `${user}:${hash}`);
+      } catch (e) {
+        setOutput('ht-output', '// error: ' + (e.message || String(e)));
+      } finally {
+        setBusy(btn, false);
+      }
+    }, 30);
+  });
+  $('ht-clear').addEventListener('click', () => {
+    $('ht-user').value = ''; $('ht-pass').value = '';
+    setOutput('ht-output', '// .htpasswd entry appears here', true);
+  });
+
+  /* -------------------------------------------------------------
+    12. WP password reset SQL
+     ------------------------------------------------------------- */
+  function escapeSql(s) {
+    // single-quoted MySQL string escaping
+    return s.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  }
+  $('wpr-generate').addEventListener('click', () => {
+    const user = $('wpr-user').value.trim();
+    const pass = $('wpr-pass').value;
+    let prefix = $('wpr-prefix').value.trim() || 'wp_';
+    const byEmail = $('wpr-by-email').checked;
+    if (!user || !pass) { setOutput('wpr-output', '// fill both fields', true); return; }
+    if (!/^[A-Za-z0-9_]+$/.test(prefix)) { setOutput('wpr-output', '// invalid table prefix (use [A-Za-z0-9_])', true); return; }
+    const btn = $('wpr-generate');
+    setBusy(btn, true);
+    setTimeout(() => {
+      try {
+        const hash = bcrypt.hashpw(pass, 10, '2y');
+        const col = byEmail ? 'user_email' : 'user_login';
+        const sql =
+`-- Generated ${new Date().toISOString()} · paste into phpMyAdmin or run via wp-cli
+-- Always back up before running: mysqldump -u USER -p DBNAME > backup.sql
+
+UPDATE \`${prefix}users\`
+SET \`user_pass\` = '${escapeSql(hash)}',
+    \`user_activation_key\` = ''
+WHERE \`${col}\` = '${escapeSql(user)}'
+LIMIT 1;`;
+        setOutput('wpr-output', sql);
+      } catch (e) {
+        setOutput('wpr-output', '// error: ' + (e.message || String(e)));
+      } finally {
+        setBusy(btn, false);
+      }
+    }, 30);
+  });
+  $('wpr-clear').addEventListener('click', () => {
+    $('wpr-user').value = ''; $('wpr-pass').value = '';
+    setOutput('wpr-output', '// SQL UPDATE statement appears here', true);
+  });
+
+  /* -------------------------------------------------------------
+    13. Footer year
+     ------------------------------------------------------------- */
+  $('year').textContent = String(new Date().getFullYear());
+
+})();
+</script>
+
+</body>
+</html>

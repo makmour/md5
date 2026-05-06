@@ -32,6 +32,53 @@ Commit: <SHA> · https://github.com/makmour/md5/commit/<SHA>
 - **Git operations on the VPS run as the `runcloud` user**, never as
   root. The web root is owned by `runcloud:runcloud`; modern git
   refuses cross-user repo access.
+- **`gh` CLI is fair game.** Code may use the `gh` command-line
+  tool to inspect workflow runs, view PR/issue state, fetch
+  deploy logs, or check repo metadata when it's faster than
+  redirecting the user to a browser. Do NOT use `gh` to *modify*
+  repo state via API (creating issues, merging PRs, editing
+  releases, etc.) without an explicit task instruction.
+
+---
+
+## 2026-05-06 · Task 03 — Brand assets + M5→MD5 + housekeeping
+
+- **Goal:** First production deploy of user-facing changes.
+  Add the favicon set + og.png referenced (but 404ing) since
+  Task 02; align the site's header brand mark with the wordmark
+  (M5 → MD5); promote carry-over fixups from Task 02.
+- **Changes:**
+  - Added `public/favicon.svg`, `public/favicon.ico` (multi-res
+    16/32/48), `public/favicon-96x96.png`,
+    `public/apple-touch-icon.png` (180×180), `public/og.png`
+    (1200×630). Generated locally in Task 03a from SVG sources
+    in `.assets-src/` (gitignored).
+  - Brand mark in `public/index.html` updated from "M5" to "MD5"
+    (HTML content + CSS `width: 30px → 40px`).
+  - SHA fixup: replaced `<SHA-PLACEHOLDER>` in Task 02's entry
+    with `1fff25ed0a2b5f545bd066b763bd3616166c1a5f`.
+  - Promoted `.secrets/` and `.assets-src/` from local-only
+    `.git/info/exclude` to committed `.gitignore`. Removed the
+    corresponding lines from `.git/info/exclude`.
+  - Removed vestigial `.github/workflows/.gitkeep`.
+  - Added "gh CLI is fair game" rule to HANDOFF Project rules.
+- **Verified (pre-push):**
+  - `git status` shows the expected file set staged (assets +
+    index.html + HANDOFF + .gitignore + deletion of .gitkeep).
+  - File sizes for assets sane: og.png ~80KB, favicon.ico ~15KB.
+- **Verified (post-push):**
+  - GH Actions run completed green.
+  - `curl -sI https://md5.me/favicon.ico` returns HTTP/2 200.
+  - `curl -sI https://md5.me/og.png` returns HTTP/2 200.
+  - https://md5.me/ — header shows "MD5" tile (not "M5"),
+    favicon visible in browser tab, no 404s in DevTools network.
+- **Open items:**
+  - Task 03 SHA fixup on next task (per the rule).
+  - /about, /contact, /privacy static pages.
+  - Cloudflare cache rules for static assets (favicons + og.png
+    can be cached aggressively; HTML should remain dynamic).
+  - Privacy-respecting analytics.
+- **Commit:** <SHA-PLACEHOLDER> · https://github.com/makmour/md5/commit/<SHA-PLACEHOLDER>
 
 ---
 
@@ -66,7 +113,7 @@ Commit: <SHA> · https://github.com/makmour/md5/commit/<SHA>
   - /about, /contact, /privacy static pages
   - Cloudflare cache rules for the HTML
   - Task 02 SHA fixup on next task (per the rule we just established)
-- **Commit:** <SHA-PLACEHOLDER> · https://github.com/makmour/md5/commit/<SHA-PLACEHOLDER>
+- **Commit:** 1fff25ed0a2b5f545bd066b763bd3616166c1a5f · https://github.com/makmour/md5/commit/1fff25ed0a2b5f545bd066b763bd3616166c1a5f
 
 ---
 

@@ -18,3 +18,7 @@ npm-debug.log*
 /scratch/
 /tmp/
 /.cache/
+
+# Per-clone secrets and asset sources (never committed)
+.secrets/
+.assets-src/

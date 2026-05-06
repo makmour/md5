@@ -41,6 +41,36 @@ Commit: <SHA> · https://github.com/makmour/md5/commit/<SHA>
 
 ---
 
+## 2026-05-06 · Task 07 - HSTS preload deferred
+
+- **Goal:** Submit md5.me to the HSTS preload list.
+- **Changes:** None. No code, no server, no repo changes
+  beyond this HANDOFF entry.
+- **What happened:**
+  - hstspreload.org requires both `includeSubDomains` and
+    `preload` directives - apex-only preload is not accepted.
+  - Current RunCloud HSTS header is `max-age=31536000` only
+    (no includeSubDomains, no preload).
+  - Adding `includeSubDomains` would hard-fail HTTPS for
+    `vps.md5.me` (grey-clouded DNS-only A record used for
+    SSH, no TLS cert). Browsers with HSTS+includeSubDomains
+    baked in would refuse to connect to any subdomain
+    without TLS, with no bypass.
+  - Decision: keep `vps.md5.me` as-is, skip preload.
+  - To revisit: either delete `vps.md5.me` DNS record and
+    update `VPS_SSH_HOST` GitHub Secret to raw IP
+    (65.108.216.157), or add TLS to vps.md5.me - then
+    enable `includeSubDomains; preload` and resubmit.
+- **Verified:** N/A - no changes to verify.
+- **Open items:**
+  - Task 07 SHA fixup on next task (per the rule).
+  - HSTS preload remains deferred (see above).
+  - Self-host Google Fonts.
+  - Cloudflare cache rules.
+- **Commit:** <SHA-PLACEHOLDER> · https://github.com/makmour/md5/commit/<SHA-PLACEHOLDER>
+
+---
+
 ## 2026-05-06 · Task 06 - Statcounter + mobile UX + strikethrough
 
 - **Goal:** Add privacy-first analytics, fix mobile tab
@@ -89,7 +119,7 @@ Commit: <SHA> · https://github.com/makmour/md5/commit/<SHA>
   - Self-host Google Fonts.
   - Cloudflare cache rules.
   - HSTS preload (deferred).
-- **Commit:** <SHA-PLACEHOLDER> · https://github.com/makmour/md5/commit/<SHA-PLACEHOLDER>
+- **Commit:** c52d3aa4a58b6f4edc21ad4bdb4dc1435ebcb7be · https://github.com/makmour/md5/commit/c52d3aa4a58b6f4edc21ad4bdb4dc1435ebcb7be
 
 ---
 

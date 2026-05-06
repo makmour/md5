@@ -1,0 +1,51 @@
+name: Deploy to RunCloud
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'public/**'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+# Only one deploy at a time. New pushes cancel queued (but not
+# in-flight) runs so we never deploy stale code.
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Pull latest on VPS
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          echo "${{ secrets.VPS_SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Deploy via git fetch + reset
+        env:
+          SSH_HOST: ${{ secrets.VPS_SSH_HOST }}
+          SSH_USER: ${{ secrets.VPS_SSH_USER }}
+        run: |
+          ssh -o IdentitiesOnly=yes "$SSH_USER@$SSH_HOST" bash -se <<'REMOTE'
+          set -euo pipefail
+          cd /home/runcloud/webapps/md5
+          git fetch --all --prune
+          git reset --hard origin/main
+          echo "---"
+          echo "HEAD now at: $(git rev-parse HEAD)"
+          echo "Working tree:"
+          git status --short
+          REMOTE
+
+      - name: Wipe SSH key from runner
+        if: always()
+        run: |
+          shred -u ~/.ssh/id_ed25519 2>/dev/null || rm -f ~/.ssh/id_ed25519

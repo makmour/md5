@@ -41,6 +41,53 @@ Commit: <SHA> · https://github.com/makmour/md5/commit/<SHA>
 
 ---
 
+## 2026-05-06 · Task 04 - About / Contact / Privacy + shared CSS
+
+- **Goal:** Replace the three footer 404s with real pages and
+  extract shared chrome CSS to a single source of truth.
+- **Changes:**
+  - Created `public/style.css` with CSS variables, base reset,
+    topbar/brand/net-pill, biz/footer, sr-only utility, and new
+    `.page` rules for content pages. ~180 lines total.
+  - Modified `public/index.html`: removed the chrome rules now
+    living in style.css from the inline `<style>` block, added
+    `<link rel="stylesheet" href="/style.css">`, updated three
+    footer links from `.html` paths to clean URLs.
+  - Created `public/about/index.html` (product-only voice,
+    per Task 04 design questions).
+  - Created `public/contact/index.html` (LinkedIn + GitHub,
+    no email inbox, GDPR routing via LinkedIn).
+  - Created `public/privacy/index.html` (Plus 1 Limited as
+    data controller, Cloudflare and Google Fonts disclosed,
+    origin server described without naming the stack, "Last
+    updated" set to today).
+  - SHA fixup: replaced `<SHA-PLACEHOLDER>` in Task 03's entry
+    with `9a08bffc220f2a35322630360f622a10dd89ad77`.
+- **Verified (pre-push):**
+  - `git status` shows expected file set staged.
+  - Local browser test: open `public/index.html` directly,
+    confirm chrome still renders correctly (it should, since
+    style.css is referenced via `/style.css` which fails
+    locally - so do this test through a local HTTP server
+    like `python3 -m http.server 8000` from inside `public/`).
+- **Verified (post-push):**
+  - GH Actions run completed green.
+  - `curl -sI https://md5.me/about` returns HTTP/2 200.
+  - `curl -sI https://md5.me/contact` returns HTTP/2 200.
+  - `curl -sI https://md5.me/privacy` returns HTTP/2 200.
+  - `curl -sI https://md5.me/style.css` returns HTTP/2 200.
+  - https://md5.me/ (homepage) still renders correctly with
+    chrome CSS now coming from external file.
+- **Open items:**
+  - Task 04 SHA fixup on next task (per the rule).
+  - Cloudflare cache rules for static assets and HTML.
+  - Privacy-respecting analytics.
+  - Self-host Google Fonts to remove the third-party dependency
+    (mentioned in /privacy as "evaluating").
+- **Commit:** <SHA-PLACEHOLDER> · https://github.com/makmour/md5/commit/<SHA-PLACEHOLDER>
+
+---
+
 ## 2026-05-06 · Task 03 — Brand assets + M5→MD5 + housekeeping
 
 - **Goal:** First production deploy of user-facing changes.
@@ -78,7 +125,7 @@ Commit: <SHA> · https://github.com/makmour/md5/commit/<SHA>
   - Cloudflare cache rules for static assets (favicons + og.png
     can be cached aggressively; HTML should remain dynamic).
   - Privacy-respecting analytics.
-- **Commit:** <SHA-PLACEHOLDER> · https://github.com/makmour/md5/commit/<SHA-PLACEHOLDER>
+- **Commit:** 9a08bffc220f2a35322630360f622a10dd89ad77 · https://github.com/makmour/md5/commit/9a08bffc220f2a35322630360f622a10dd89ad77
 
 ---
 

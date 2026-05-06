@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>About - md5.me</title>
+<meta name="description" content="What md5.me is, why it runs entirely in your browser, and what it's deliberately not.">
+<meta name="theme-color" content="#0a0e0d">
+<link rel="canonical" href="https://md5.me/about">
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://md5.me/about">
+<meta property="og:title" content="About - md5.me">
+<meta property="og:description" content="What md5.me is, why it runs entirely in your browser, and what it's deliberately not.">
+<meta property="og:image" content="https://md5.me/og.png">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<div class="shell">
+
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="md5.me home">
+      <span class="brand-mark" aria-hidden="true">MD5</span>
+      <span>md5<span class="dot">.</span>me</span>
+      <span class="tag">/ crypto toolkit</span>
+    </a>
+    <div class="net-pill">
+      <span class="led" aria-hidden="true"></span>
+      <span><b>0</b> network calls since load</span>
+    </div>
+  </header>
+
+  <main class="page">
+    <h1>About md5.me</h1>
+
+    <h2>What md5.me is</h2>
+    <p>A small, fast cryptographic toolkit for WordPress admins, sysadmins, and security professionals. Seven tools on one page: MD5 hashing, SHA-1/256/384/512, bcrypt and phpass for modern WordPress passwords, a cryptographically-secure password generator, the eight WordPress secret keys for <code>wp-config.php</code>, <code>.htpasswd</code> entries for nginx and Apache, and a ready-to-run SQL snippet to reset a locked-out WordPress admin.</p>
+
+    <h2>Why it runs in your browser</h2>
+    <p>Every operation on this site happens client-side, in your tab, using the WebCrypto API and a small amount of self-contained JavaScript. The plaintext you type into the hash and password fields is never sent over the network, never written to a log, never stored in a cookie. You can verify this yourself: open the browser's Network tab and watch. The <strong>0 network calls since load</strong> counter at the top of the page is a real measurement, not a marketing line.</p>
+    <p>Server-side hash generators have a structural problem: they require you to trust the server with the very thing you're trying to protect. A site that hashes your password on its server <em>could</em> log it. A salt generator that mints <code>wp-config.php</code> keys on its server <em>could</em> keep a copy. The only way to prove a site doesn't do that is to not give it the chance.</p>
+
+    <h2>What it's good for</h2>
+    <p>Day-to-day sysadmin work. Generating fresh WordPress salts after a compromise, hashing a new admin password before pasting it into a database, minting an <code>.htpasswd</code> line to harden <code>wp-login.php</code>, producing strong random passwords for credentials that don't deserve a memorable one. The tools are deliberately narrow: each one does the smallest thing it can do well, with the relevant context and a few words of explanation alongside.</p>
+
+    <h2>What it's not</h2>
+    <p>A vault, an authenticator, a password manager, or a pen-testing kit. There's no account, no login, no API. The site has no business model that depends on knowing what you do with it.</p>
+
+    <h2>Who built it</h2>
+    <p>Operated by <strong>Plus 1 Limited</strong>, a company registered in Greece. The site is one of several tools and services maintained by the same operator, oriented toward WordPress security and operations.</p>
+  </main>
+
+  <aside class="biz">
+    <div>
+      <h4>Built by a WordPress security consultant.</h4>
+      <p>If you're rotating salts because something feels off, or you've already confirmed a compromise, I clean infected sites and harden them so it doesn't happen again.</p>
+    </div>
+    <a class="cta" href="https://sudowp.com/" rel="noopener">sudowp.com →</a>
+  </aside>
+
+  <footer class="foot">
+    <div>© <span id="year"></span> md5.me · everything client-side · zero tracking on generate</div>
+    <div>
+      <a href="/about">About</a>
+      &nbsp;·&nbsp;
+      <a href="/contact">Contact</a>
+      &nbsp;·&nbsp;
+      <a href="/privacy">Privacy</a>
+    </div>
+  </footer>
+
+</div>
+
+<script>document.getElementById('year').textContent = String(new Date().getFullYear());</script>
+
+</body>
+</html>

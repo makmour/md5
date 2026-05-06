@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Privacy - md5.me</title>
+<meta name="description" content="What data md5.me does and doesn't process. The short answer: almost none, and certainly not anything you type into the tools.">
+<meta name="theme-color" content="#0a0e0d">
+<link rel="canonical" href="https://md5.me/privacy">
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://md5.me/privacy">
+<meta property="og:title" content="Privacy - md5.me">
+<meta property="og:description" content="What data md5.me does and doesn't process. The short answer: almost none, and certainly not anything you type into the tools.">
+<meta property="og:image" content="https://md5.me/og.png">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<div class="shell">
+
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="md5.me home">
+      <span class="brand-mark" aria-hidden="true">MD5</span>
+      <span>md5<span class="dot">.</span>me</span>
+      <span class="tag">/ crypto toolkit</span>
+    </a>
+    <div class="net-pill">
+      <span class="led" aria-hidden="true"></span>
+      <span><b>0</b> network calls since load</span>
+    </div>
+  </header>
+
+  <main class="page">
+    <h1>Privacy notice</h1>
+    <p class="meta">Last updated: 2026-05-06</p>
+
+    <p>This site, <strong>md5.me</strong>, is operated by <strong>Plus 1 Limited</strong>, a company registered in Greece. We treat user privacy as foundational to the product, not an afterthought, and the goal of this notice is to be honest about what does and doesn't happen when you visit.</p>
+
+    <h2>The short version</h2>
+    <p>When you use the tools on this site, the data you type into the input fields, passwords, plaintext you want hashed, anything else, <strong>stays in your browser</strong>. Nothing you enter is transmitted to our server, because we don't operate one for the application. All hashing, password generation, salt generation, and SQL drafting runs in your browser via JavaScript. You can verify this in the Network tab of your browser's developer tools.</p>
+    <p>The site itself, however, is delivered to you by infrastructure providers, and that involves a small amount of unavoidable data exchange. The rest of this notice explains it honestly.</p>
+
+    <h2>What data is processed when you visit</h2>
+    <p><strong>By Cloudflare</strong> (CDN and DDoS protection). Your IP address, the URL you requested, your browser's user agent, and standard HTTP headers are processed by Cloudflare in order to deliver the page. Cloudflare may set a <code>__cf_bm</code> cookie for bot detection. Cloudflare's privacy practices are documented at <a href="https://www.cloudflare.com/privacypolicy/" rel="noopener">www.cloudflare.com/privacypolicy</a>.</p>
+
+    <p><strong>By Google Fonts</strong>. The site loads two typefaces, JetBrains Mono and Space Grotesk, from Google Fonts (<code>fonts.googleapis.com</code> and <code>fonts.gstatic.com</code>). Loading these typefaces causes your browser to make a request to Google's servers, which means Google receives your IP address and the URL you came from. Google's data practices are documented at <a href="https://policies.google.com/privacy" rel="noopener">policies.google.com/privacy</a>. We are evaluating self-hosting these fonts in a future update; if you'd prefer to avoid the dependency now, browser extensions like Decentraleyes can serve them locally.</p>
+
+    <p><strong>By the origin server</strong>. The server hosting the site logs each request: IP, URL, user agent, response code, for normal operational purposes (debugging, security monitoring). These logs are retained for a short rolling window and are not shared with third parties.</p>
+
+    <h2>What data is <strong>not</strong> collected</h2>
+    <ul>
+      <li><strong>No analytics.</strong> There is no Google Analytics, Plausible, Statcounter, or similar tracking on this site.</li>
+      <li><strong>No advertising.</strong> No ad networks, no retargeting pixels, no third-party trackers.</li>
+      <li><strong>No accounts.</strong> There is nothing to sign up for and no user database.</li>
+      <li><strong>No marketing cookies.</strong></li>
+      <li><strong>No data from the tool inputs.</strong> Your hash inputs, password seeds, salt outputs, and <code>.htpasswd</code> material are processed entirely in your browser and never reach our infrastructure.</li>
+    </ul>
+
+    <h2>Your rights under the GDPR</h2>
+    <p>If you are in the European Economic Area, the United Kingdom, or another jurisdiction with comparable rules, you have the right to access, rectify, erase, restrict, port, and object to processing of personal data we hold about you. In practice, the only personal data tied to your visit is the request log described above, and only for as long as it's retained.</p>
+    <p>To exercise any of these rights, or to file a complaint about our processing, please contact us via <a href="https://www.linkedin.com/in/makismour/" rel="noopener">LinkedIn DM</a>. We aim to respond within thirty days.</p>
+
+    <h2>Changes to this notice</h2>
+    <p>If we change anything material, a new analytics provider, a different CDN, a self-hosted fonts setup that removes the Google dependency, we'll update this page and bump the "last updated" date. There's no version history yet because this is the first version.</p>
+
+    <hr>
+
+    <p class="signoff">Plus 1 Limited · Greece · md5.me</p>
+  </main>
+
+  <aside class="biz">
+    <div>
+      <h4>Built by a WordPress security consultant.</h4>
+      <p>If you're rotating salts because something feels off, or you've already confirmed a compromise, I clean infected sites and harden them so it doesn't happen again.</p>
+    </div>
+    <a class="cta" href="https://sudowp.com/" rel="noopener">sudowp.com →</a>
+  </aside>
+
+  <footer class="foot">
+    <div>© <span id="year"></span> md5.me · everything client-side · zero tracking on generate</div>
+    <div>
+      <a href="/about">About</a>
+      &nbsp;·&nbsp;
+      <a href="/contact">Contact</a>
+      &nbsp;·&nbsp;
+      <a href="/privacy">Privacy</a>
+    </div>
+  </footer>
+
+</div>
+
+<script>document.getElementById('year').textContent = String(new Date().getFullYear());</script>
+
+</body>
+</html>

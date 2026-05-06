@@ -55,11 +55,13 @@
 
     <p><strong>By Google Fonts</strong>. The site loads two typefaces, JetBrains Mono and Space Grotesk, from Google Fonts (<code>fonts.googleapis.com</code> and <code>fonts.gstatic.com</code>). Loading these typefaces causes your browser to make a request to Google's servers, which means Google receives your IP address and the URL you came from. Google's data practices are documented at <a href="https://policies.google.com/privacy" rel="noopener">policies.google.com/privacy</a>. We are evaluating self-hosting these fonts in a future update; if you'd prefer to avoid the dependency now, browser extensions like Decentraleyes can serve them locally.</p>
 
+    <p><strong>By Statcounter</strong> (visit analytics). This site uses Statcounter to collect basic visit statistics: page views, referrer URLs, and approximate geography derived from IP address. When you visit, Statcounter's script loads from <code>www.statcounter.com</code> and logs the visit. No personally identifiable information beyond what is standard in any web server request is collected or shared with us. Statcounter's privacy policy is at <a href="https://statcounter.com/about/legal/privacy-policy/" rel="noopener">statcounter.com/about/legal/privacy-policy</a>.</p>
+
     <p><strong>By the origin server</strong>. The server hosting the site logs each request: IP, URL, user agent, response code, for normal operational purposes (debugging, security monitoring). These logs are retained for a short rolling window and are not shared with third parties.</p>
 
     <h2>What data is <strong>not</strong> collected</h2>
     <ul>
-      <li><strong>No analytics.</strong> There is no Google Analytics, Plausible, Statcounter, or similar tracking on this site.</li>
+      <li><strong>No advertising analytics.</strong> The site uses Statcounter for basic visit statistics only. No ad networks, retargeting pixels, or behavioural profiling.</li>
       <li><strong>No advertising.</strong> No ad networks, no retargeting pixels, no third-party trackers.</li>
       <li><strong>No accounts.</strong> There is nothing to sign up for and no user database.</li>
       <li><strong>No marketing cookies.</strong></li>
@@ -100,6 +102,17 @@
 </div>
 
 <script>document.getElementById('year').textContent = String(new Date().getFullYear());</script>
+
+<!-- Statcounter -->
+<script type="text/javascript">
+var sc_project=9988271;
+var sc_invisible=1;
+var sc_security="43b4d97c";
+</script>
+<script type="text/javascript"
+src="https://www.statcounter.com/counter/counter.js"
+async></script>
+<!-- End Statcounter -->
 
 </body>
 </html>

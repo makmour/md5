@@ -41,6 +41,58 @@ Commit: <SHA> · https://github.com/makmour/md5/commit/<SHA>
 
 ---
 
+## 2026-05-06 · Task 06 - Statcounter + mobile UX + strikethrough
+
+- **Goal:** Add privacy-first analytics, fix mobile tab
+  navigation, fix hero strikethrough on mobile, update
+  /privacy to disclose Statcounter honestly.
+- **Changes:**
+  - Added Statcounter async snippet (project 9988271,
+    invisible, HTTPS-only) to all four HTML pages
+    immediately before </body>.
+  - Fixed mobile tab navigation: changed `.tabs` from
+    `flex-wrap: wrap` to `flex-wrap: nowrap` so tabs stay
+    on a single horizontally-scrollable row. Added
+    `.tabs::-webkit-scrollbar { display: none; }` to
+    hide the scrollbar on webkit browsers.
+  - Fixed hero strikethrough: removed `transform:
+    rotate(-2deg)` from `.strike::after` and adjusted
+    `top: 56%` to `top: 52%`. Horizontal line renders
+    pixel-perfect at any size and never drifts on mobile.
+  - Updated `public/privacy/index.html`: added Statcounter
+    disclosure paragraph in "What data is processed",
+    updated "No analytics" bullet to "No advertising
+    analytics", bumped "Last updated" date.
+  - SHA fixup: replaced `<SHA-PLACEHOLDER>` in Task 05
+    entry with `e75c38f0c773247d8129e8bb9448343b8317549f`.
+- **Verified (pre-push):**
+  - Local HTTP server test: Statcounter snippet present
+    in all four pages (`grep -r "sc_project" public/`
+    should return 4 results).
+  - Strikethrough fix visible in local browser on mobile
+    viewport (DevTools responsive mode).
+- **Verified (post-push):**
+  - GH Actions deploy green.
+  - `curl -s https://md5.me/ | grep -i statcounter`
+    returns the snippet.
+  - Mobile browser: tabs scroll horizontally on the
+    homepage.
+  - NOTE: Statcounter will NOT record visits yet - the
+    CSP still has connect-src 'none' until the user
+    updates it in RunCloud NGINX Config panel. See
+    post-deploy instructions below.
+- **Open items:**
+  - Task 06 SHA fixup on next task (per the rule).
+  - User must update CSP in RunCloud NGINX Config panel
+    after this deploy (see post-deploy instructions in
+    Task 06 chat session).
+  - Self-host Google Fonts.
+  - Cloudflare cache rules.
+  - HSTS preload (deferred).
+- **Commit:** <SHA-PLACEHOLDER> · https://github.com/makmour/md5/commit/<SHA-PLACEHOLDER>
+
+---
+
 ## 2026-05-06 · Task 05 - nginx security headers hardening
 
 - **Goal:** Ship security headers and HSTS for md5.me. All work
@@ -86,7 +138,7 @@ Commit: <SHA> · https://github.com/makmour/md5/commit/<SHA>
     mentioned in /privacy as "evaluating")
   - Privacy-respecting analytics
   - Cloudflare cache rules for static assets
-- **Commit:** <SHA-PLACEHOLDER> · https://github.com/makmour/md5/commit/<SHA-PLACEHOLDER>
+- **Commit:** e75c38f0c773247d8129e8bb9448343b8317549f · https://github.com/makmour/md5/commit/e75c38f0c773247d8129e8bb9448343b8317549f
 
 ---
 
